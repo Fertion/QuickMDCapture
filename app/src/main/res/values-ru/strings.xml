@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QuickMDCapture</string>
+    <string name="select_folder">Выбрать папку</string>
+    <string name="folder_selected">Сейчас выбрана папка: %1$s</string>
+    <string name="save_date_created">Сохранять дату создания в свойство</string>
+    <string name="error_selecting_folder">Ошибка при выборе папки: %1$s</string>
+    <string name="notification_service_started">Сервис уведомлений запущен</string>
+    <string name="note_saved">Заметка сохранена</string>
+    <string name="note_error">Произошла ошибка</string>
+    <string name="enter_note">Введите заметку</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="add_note_notification_text">Нажмите, чтобы добавить заметку</string>
+    <string name="property_name_hint">Название свойства</string>
+    <string name="folder_not_selected">Папка не выбрана</string>
+</resources>

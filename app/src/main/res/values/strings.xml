@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QuickMDCapture</string>
+    <string name="select_folder">Select Folder</string>
+    <string name="folder_selected">Current selected folder: %1$s</string>
+    <string name="save_date_created">Save creation date in property</string>
+    <string name="error_selecting_folder">Error selecting folder: %1$s</string>
+    <string name="notification_service_started">Notification service started</string>
+    <string name="note_saved">Note saved</string>
+    <string name="note_error">An error occurred</string>
+    <string name="enter_note">Enter note</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="add_note_notification_text">Click to add a note</string>
+    <string name="property_name_hint">Property name</string>
+    <string name="folder_not_selected">Folder not selected</string>
+</resources>
