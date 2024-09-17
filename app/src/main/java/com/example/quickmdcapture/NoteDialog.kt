@@ -54,9 +54,12 @@ class NoteDialog(context: Context) : Dialog(context) {
     private fun saveNote(note: String) {
         val folderUriString = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
             .getString("FOLDER_URI", null)
-        // Получаем имя свойства из SharedPreferences
         val propertyName = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
             .getString("PROPERTY_NAME", "created")
+
+        // Получаем шаблон заголовка заметки из SharedPreferences
+        val noteTitleTemplate = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
+            .getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH:mm:ss")
 
         val isDateCreatedEnabled = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
             .getBoolean("SAVE_DATE_CREATED", false)
@@ -70,7 +73,8 @@ class NoteDialog(context: Context) : Dialog(context) {
             val folderUri = Uri.parse(folderUriString)
             val contentResolver = context.contentResolver
 
-            val timeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
+            // Форматируем название файла по шаблону
+            val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
             val fileName = "${timeStamp.replace(":", "_")}.md"
 
             val documentFile = DocumentFile.fromTreeUri(context, folderUri)

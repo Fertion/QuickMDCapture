@@ -14,4 +14,5 @@
     <string name="add_note_notification_text">Нажмите, чтобы добавить заметку</string>
     <string name="property_name_hint">Название свойства</string>
     <string name="folder_not_selected">Папка не выбрана</string>
+    <string name="note_title_template_hint">Шаблон названия заметки</string>
 </resources>
