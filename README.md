@@ -1,6 +1,7 @@
 ![ic_launcher main (1)](https://github.com/user-attachments/assets/dbfb65c5-6e39-4880-8392-8965f19c87ea)
 
-[Download APK](https://github.com/Fertion/QuickMDCapture/releases/latest/download/app-release.apk)
+[Download APK](https://github.com/Fertion/QuickMDCapture/releases/latest)
+
 
 This is an Android app that allows you to quickly create notes in MD format from the notification bar. This allows you to quickly create notes, as the notification panel can be opened quickly without distracting you from another app, such as the e-book you are reading. Originally, the app was created to work with [Obsidian](https://obsidian.md/), but it can also be used with other note-taking apps that support the .md format if needed.
 
