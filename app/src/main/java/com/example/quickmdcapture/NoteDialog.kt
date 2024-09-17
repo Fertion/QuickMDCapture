@@ -59,7 +59,7 @@ class NoteDialog(context: Context) : Dialog(context) {
 
         // Получаем шаблон заголовка заметки из SharedPreferences
         val noteTitleTemplate = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-            .getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH:mm:ss")
+            .getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss")
 
         val isDateCreatedEnabled = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
             .getBoolean("SAVE_DATE_CREATED", false)
@@ -83,19 +83,30 @@ class NoteDialog(context: Context) : Dialog(context) {
                 return
             }
 
-            val fileDoc = documentFile.createFile("text/markdown", fileName)
-            if (fileDoc != null) {
-                contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
-                    val dataToWrite = if (isDateCreatedEnabled) {
-                        "---\n$propertyName: $timeStamp\n---\n$note"
-                    } else {
-                        note
-                    }
-                    outputStream.write(dataToWrite.toByteArray())
+            // Проверка на существование файла
+            val existingFile = documentFile.findFile(fileName)
+            if (existingFile != null) {
+                // Файл существует, добавляем новый текст в конец
+                contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
+                    outputStream.write("\n$note".toByteArray())
                 }
-                Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                // Файл не существует, создаем новый
+                val fileDoc = documentFile.createFile("text/markdown", fileName)
+                if (fileDoc != null) {
+                    contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
+                        val dataToWrite = if (isDateCreatedEnabled) {
+                            "---\n$propertyName: ${timeStamp}\n---\n$note"
+                        } else {
+                            note
+                        }
+                        outputStream.write(dataToWrite.toByteArray())
+                    }
+                    Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                }
             }
         } catch (e: Exception) {
             Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()

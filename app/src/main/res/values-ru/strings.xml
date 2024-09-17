@@ -15,4 +15,5 @@
     <string name="property_name_hint">Название свойства</string>
     <string name="folder_not_selected">Папка не выбрана</string>
     <string name="note_title_template_hint">Шаблон названия заметки</string>
+    <string name="note_appended">Заметка добавлена в существующий файл</string>
 </resources>
