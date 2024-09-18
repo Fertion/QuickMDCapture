@@ -19,7 +19,7 @@ class TransparentActivity : AppCompatActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
-        val dialog = NoteDialog(this)
+        val dialog = NoteDialog(this) // Передаем this (AppCompatActivity)
         dialog.setOnDismissListener {
             finish()
             overridePendingTransition(0, 0)

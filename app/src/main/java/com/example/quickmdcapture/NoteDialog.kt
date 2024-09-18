@@ -2,19 +2,27 @@ package com.example.quickmdcapture
 
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-class NoteDialog(context: Context) : Dialog(context) {
+class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
+
+    private lateinit var speechRecognizerLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +39,7 @@ class NoteDialog(context: Context) : Dialog(context) {
         val etNote = findViewById<EditText>(R.id.etNote)
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
+        val btnSpeech = findViewById<ImageButton>(R.id.btnSpeech)
 
         btnSave.setBackgroundColor(Color.parseColor("#25d500"))
         btnCancel.setBackgroundColor(Color.parseColor("#ff0000"))
@@ -49,6 +58,30 @@ class NoteDialog(context: Context) : Dialog(context) {
         btnCancel.setOnClickListener {
             dismiss()
         }
+
+        speechRecognizerLauncher =
+            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == AppCompatActivity.RESULT_OK && result.data != null) {
+                    val results: ArrayList<String>? =
+                        result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                    val spokenText = results?.get(0) ?: ""
+                    updateNoteText(spokenText)
+                }
+            }
+
+        btnSpeech.setOnClickListener {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.speech_prompt))
+            speechRecognizerLauncher.launch(intent)
+        }
+    }
+
+    private fun updateNoteText(text: String) {
+        val etNote = findViewById<EditText>(R.id.etNote)
+        val currentText = etNote.text.toString()
+        etNote.setText("$currentText $text")
     }
 
     private fun saveNote(note: String) {

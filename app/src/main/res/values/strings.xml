@@ -16,5 +16,6 @@
     <string name="folder_not_selected">Folder not selected</string>
     <string name="note_title_template_hint">Note title template</string>
     <string name="note_appended">A note has been added to an existing file</string>
-
+    <string name="speech_to_text">Speech to text</string>
+    <string name="speech_prompt">Say something</string>
 </resources>

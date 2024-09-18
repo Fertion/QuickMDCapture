@@ -5,16 +5,31 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <EditText
-        android:id="@+id/etNote"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/enter_note"
-        android:inputType="textMultiLine"
-        android:minLines="1"
-        android:maxLines="6"
-        android:scrollbars="vertical"
-        android:overScrollMode="always" />
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/etNote"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/enter_note"
+            android:inputType="textMultiLine"
+            android:minLines="1"
+            android:maxLines="6"
+            android:overScrollMode="always"
+            android:scrollbars="vertical" />
+
+        <ImageButton
+            android:id="@+id/btnSpeech"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/speech_to_text"
+            android:src="@android:drawable/ic_btn_speak_now" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,18 +40,18 @@
             android:id="@+id/btnCancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:text="@string/cancel"
-            android:textColor="#FFFFFF"
-            android:layout_marginEnd="8dp" />
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="@string/save"
-            android:textColor="#FFFFFF"
-            android:layout_marginStart="8dp" />
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 </LinearLayout>
