@@ -18,4 +18,6 @@
     <string name="note_appended">Заметка добавлена в существующий файл</string>
     <string name="speech_to_text">Голосовой ввод</string>
     <string name="speech_prompt">Скажите что-нибудь</string>
+    <string name="auto_save_setting">Сохранять заметку сразу после голосового ввода</string>
+
 </resources>

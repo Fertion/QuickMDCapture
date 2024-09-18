@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
+class NoteDialog(private val activity: AppCompatActivity, private val isAutoSaveEnabled: Boolean) : Dialog(activity) {
 
     private lateinit var speechRecognizerLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
 
@@ -78,6 +78,11 @@ class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
         val etNote = findViewById<EditText>(R.id.etNote)
         val currentText = etNote.text.toString()
         etNote.setText("$currentText $text")
+
+        if (isAutoSaveEnabled) {
+            saveNote(etNote.text.toString())
+            dismiss() // Закрываем диалог после автосохранения
+        }
     }
 
     private fun saveNote(note: String) {

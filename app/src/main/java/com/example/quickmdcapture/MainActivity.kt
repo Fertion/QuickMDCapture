@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -17,11 +16,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.documentfile.provider.DocumentFile
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.documentfile.provider.DocumentFile
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,7 +46,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         if (isGranted) {
             startNotificationService()
@@ -61,9 +59,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        currentFolderUri = getString(R.string.folder_not_selected) // Установите начальное значение
+        currentFolderUri = getString(R.string.folder_not_selected)
 
-        currentFolderUri = getSelectedFolder() // Инициализация с сохраненной папкой
+        currentFolderUri = getSelectedFolder()
 
         setContent {
             MaterialTheme {
@@ -73,7 +71,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
@@ -101,14 +98,16 @@ fun MainScreen(
 ) {
     var isDateCreatedEnabled by remember { mutableStateOf(false) }
     var propertyName by remember { mutableStateOf("created") }
-    var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") } // Изменено на "yyyy.MM.dd HH_mm_ss"
+    var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") }
+    var isAutoSaveEnabled by remember { mutableStateOf(false) } // Добавлено состояние автосохранения
 
     val sharedPreferences = LocalContext.current.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
 
     LaunchedEffect(Unit) {
         isDateCreatedEnabled = sharedPreferences.getBoolean("SAVE_DATE_CREATED", false)
         propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
-        noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss" // Инициализация
+        noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
+        isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false) // Загрузка состояния автосохранения
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
@@ -156,12 +155,10 @@ fun MainScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Поле для ввода названия свойства
             TextField(
                 value = propertyName,
                 onValueChange = {
                     propertyName = it
-                    // Сохраняем новое значение в SharedPreferences
                     sharedPreferences.edit().putString("PROPERTY_NAME", it).apply()
                 },
                 enabled = isDateCreatedEnabled,
@@ -170,24 +167,44 @@ fun MainScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Поле для ввода шаблона заголовка заметки
             TextField(
                 value = noteTitleTemplate,
                 onValueChange = {
                     noteTitleTemplate = it
-                    // Сохраняем новое значение в SharedPreferences
                     sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", it).apply()
                 },
                 label = { Text(stringResource(id = R.string.note_title_template_hint)) },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Чекбокс для автосохранения
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(id = R.string.auto_save_setting),
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = isAutoSaveEnabled,
+                    onCheckedChange = {
+                        isAutoSaveEnabled = it
+                        sharedPreferences.edit().putBoolean("AUTO_SAVE_ENABLED", it).apply()
+                    }
+                )
+            }
         }
     }
 }
 
-// Функция для извлечения понятного названия папки из URI
 fun getFolderDisplayName(uri: String): String {
     val parsedUri = Uri.parse(uri)
     val lastSegment = parsedUri.lastPathSegment ?: "Unknown Folder"
-    return lastSegment.replace("primary:", "") // Убираем "primary:"
+    return lastSegment.replace("primary:", "")
 }

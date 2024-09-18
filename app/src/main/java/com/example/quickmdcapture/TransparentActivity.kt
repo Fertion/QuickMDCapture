@@ -1,5 +1,6 @@
 package com.example.quickmdcapture
 
+import android.content.Context
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
@@ -19,14 +20,14 @@ class TransparentActivity : AppCompatActivity() {
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
-        val dialog = NoteDialog(this) // Передаем this (AppCompatActivity)
+        val isAutoSaveEnabled = getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE).getBoolean("AUTO_SAVE_ENABLED", false)
+        val dialog = NoteDialog(this, isAutoSaveEnabled)
         dialog.setOnDismissListener {
             finish()
             overridePendingTransition(0, 0)
         }
         dialog.show()
 
-        // Убираем флаг FLAG_NOT_FOCUSABLE, чтобы диалог мог получить фокус
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     }
 }
