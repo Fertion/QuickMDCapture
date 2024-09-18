@@ -38,20 +38,20 @@
 
         <Button
             android:id="@+id/btnCancel"
+            style="@style/DialogButton.Cancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="@string/cancel"
-            android:textColor="#FFFFFF" />
+            android:text="@string/cancel" />
 
         <Button
             android:id="@+id/btnSave"
+            style="@style/DialogButton.Save"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="@string/save"
-            android:textColor="#FFFFFF" />
+            android:text="@string/save" />
     </LinearLayout>
 </LinearLayout>

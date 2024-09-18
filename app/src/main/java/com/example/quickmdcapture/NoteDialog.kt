@@ -3,7 +3,6 @@ package com.example.quickmdcapture
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognizerIntent
@@ -40,9 +39,6 @@ class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
         val btnSpeech = findViewById<ImageButton>(R.id.btnSpeech)
-
-        btnSave.setBackgroundColor(Color.parseColor("#25d500"))
-        btnCancel.setBackgroundColor(Color.parseColor("#ff0000"))
 
         etNote.requestFocus()
         window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
@@ -90,7 +86,6 @@ class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
         val propertyName = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
             .getString("PROPERTY_NAME", "created")
 
-        // Получаем шаблон заголовка заметки из SharedPreferences
         val noteTitleTemplate = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
             .getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss")
 
@@ -106,7 +101,6 @@ class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
             val folderUri = Uri.parse(folderUriString)
             val contentResolver = context.contentResolver
 
-            // Форматируем название файла по шаблону
             val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
             val fileName = "${timeStamp.replace(":", "_")}.md"
 
@@ -116,16 +110,13 @@ class NoteDialog(private val activity: AppCompatActivity) : Dialog(activity) {
                 return
             }
 
-            // Проверка на существование файла
             val existingFile = documentFile.findFile(fileName)
             if (existingFile != null) {
-                // Файл существует, добавляем новый текст в конец
                 contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
                     outputStream.write("\n$note".toByteArray())
                 }
                 Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT).show()
             } else {
-                // Файл не существует, создаем новый
                 val fileDoc = documentFile.createFile("text/markdown", fileName)
                 if (fileDoc != null) {
                     contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
