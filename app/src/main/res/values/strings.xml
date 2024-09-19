@@ -25,5 +25,8 @@
     <string name="save_settings_title">Where and how to save</string>
     <string name="yaml_settings_title">YAML settings</string>
     <string name="input_settings_title">Input settings</string>
-
+    <string name="add_notes_methods_info">You can also add notes via the \"Share\" menu and widgets.</string>
+    <string name="save_settings_info">If a file with the same name already exists, the information will be appended to the end of the existing file.</string>
+    <string name="info_dialog_title">Info</string>
+    <string name="ok">Ok</string>
 </resources>

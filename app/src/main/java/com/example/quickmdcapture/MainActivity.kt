@@ -11,6 +11,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -113,6 +115,9 @@ fun MainScreen(
     var isAutoSaveEnabled by remember { mutableStateOf(false) }
     var isShowNotificationEnabled by remember { mutableStateOf(false) }
 
+    var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
+    var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
+
     val sharedPreferences = LocalContext.current.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
     val context = LocalContext.current
 
@@ -133,12 +138,20 @@ fun MainScreen(
             verticalArrangement = Arrangement.Top
         ) {
             // Методы добавления заметок
-            Text(
-                text = stringResource(id = R.string.add_notes_methods_title),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Black
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(id = R.string.add_notes_methods_title),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = Color.Black
+                )
+                IconButton(onClick = { showAddNotesMethodsInfoDialog = true }) {
+                    Icon(Icons.Filled.Info, contentDescription = "Info")
+                }
+            }
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -181,12 +194,20 @@ fun MainScreen(
 
             // Куда и как сохранять
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(id = R.string.save_settings_title),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Black
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(id = R.string.save_settings_title),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    color = Color.Black
+                )
+                IconButton(onClick = { showSaveSettingsInfoDialog = true }) {
+                    Icon(Icons.Filled.Info, contentDescription = "Info")
+                }
+            }
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -201,7 +222,10 @@ fun MainScreen(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = stringResource(id = R.string.folder_selected, getFolderDisplayName(currentFolderUri)),
+                        text = stringResource(
+                            id = R.string.folder_selected,
+                            getFolderDisplayName(currentFolderUri)
+                        ),
                         color = Color.Black,
                         modifier = Modifier.fillMaxWidth(),
                         overflow = TextOverflow.Visible,
@@ -251,7 +275,8 @@ fun MainScreen(
                             checked = isDateCreatedEnabled,
                             onCheckedChange = {
                                 isDateCreatedEnabled = it
-                                sharedPreferences.edit().putBoolean("SAVE_DATE_CREATED", it).apply()
+                                sharedPreferences.edit().putBoolean("SAVE_DATE_CREATED", it)
+                                    .apply()
                             }
                         )
                     }
@@ -300,12 +325,25 @@ fun MainScreen(
                             checked = isAutoSaveEnabled,
                             onCheckedChange = {
                                 isAutoSaveEnabled = it
-                                sharedPreferences.edit().putBoolean("AUTO_SAVE_ENABLED", it).apply()
+                                sharedPreferences.edit().putBoolean("AUTO_SAVE_ENABLED", it)
+                                    .apply()
                             }
                         )
                     }
                 }
             }
+        }
+    }
+
+    if (showAddNotesMethodsInfoDialog) {
+        showInfoDialog(stringResource(id = R.string.add_notes_methods_info)) {
+            showAddNotesMethodsInfoDialog = false
+        }
+    }
+
+    if (showSaveSettingsInfoDialog) {
+        showInfoDialog(stringResource(id = R.string.save_settings_info)) {
+            showSaveSettingsInfoDialog = false
         }
     }
 }
@@ -314,4 +352,20 @@ fun getFolderDisplayName(uri: String): String {
     val parsedUri = Uri.parse(uri)
     val lastSegment = parsedUri.lastPathSegment ?: "Unknown Folder"
     return lastSegment.replace("primary:", "")
+}
+
+@Composable
+fun showInfoDialog(message: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(id = R.string.info_dialog_title)) },
+        text = { Text(message) },
+        confirmButton = {
+            Button(
+                onClick = onDismiss
+            ) {
+                Text(stringResource(id = R.string.ok))
+            }
+        }
+    )
 }

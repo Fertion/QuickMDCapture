@@ -25,5 +25,8 @@
     <string name="save_settings_title">Куда и как сохранять</string>
     <string name="yaml_settings_title">Настройки YAML</string>
     <string name="input_settings_title">Настройки ввода</string>
-
+    <string name="add_notes_methods_info">Вы также можете добавлять заметки через меню \"Поделиться\" и виджеты.</string>
+    <string name="save_settings_info">Если файл с таким именем уже существует, информация будет добавлена в конец существующего файла.</string>
+    <string name="info_dialog_title">Инфо</string>
+    <string name="ok">Ок</string>
 </resources>
