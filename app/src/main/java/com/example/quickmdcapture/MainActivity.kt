@@ -48,7 +48,10 @@ class MainActivity : AppCompatActivity() {
     }
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         if (isGranted) {
-            startNotificationService()
+            // Проверяем состояние чекбокса перед запуском сервиса
+            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) { // Изменение: true по умолчанию
+                startNotificationService()
+            }
         } else {
             Toast.makeText(this, getString(R.string.error_selecting_folder, "Notification permission not granted"), Toast.LENGTH_LONG).show()
         }
@@ -74,7 +77,10 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            startNotificationService()
+            // Проверяем состояние чекбокса перед запуском сервиса
+            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) { // Изменение: true по умолчанию
+                startNotificationService()
+            }
         }
     }
 
@@ -83,10 +89,16 @@ class MainActivity : AppCompatActivity() {
             .getString("FOLDER_URI", getString(R.string.folder_not_selected)) ?: getString(R.string.folder_not_selected)
     }
 
-    private fun startNotificationService() {
+    public fun startNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
         startForegroundService(serviceIntent)
         Toast.makeText(this, getString(R.string.notification_service_started), Toast.LENGTH_SHORT).show()
+    }
+
+    public fun stopNotificationService() {
+        val serviceIntent = Intent(this, NotificationService::class.java)
+        stopService(serviceIntent)
+        Toast.makeText(this, getString(R.string.notification_service_stopped), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -100,14 +112,17 @@ fun MainScreen(
     var propertyName by remember { mutableStateOf("created") }
     var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") }
     var isAutoSaveEnabled by remember { mutableStateOf(false) }
+    var isShowNotificationEnabled by remember { mutableStateOf(false) } // Состояние чекбокса для уведомления
 
     val sharedPreferences = LocalContext.current.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         isDateCreatedEnabled = sharedPreferences.getBoolean("SAVE_DATE_CREATED", false)
         propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
         noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
         isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false)
+        isShowNotificationEnabled = sharedPreferences.getBoolean("SHOW_NOTIFICATION", true) // Изменение: true по умолчанию
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
@@ -118,6 +133,43 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            // Чекбокс для уведомления (перенесен наверх)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(id = R.string.add_notes_via_notification),
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = isShowNotificationEnabled,
+                    onCheckedChange = { isChecked ->
+                        isShowNotificationEnabled = isChecked
+                        sharedPreferences.edit().putBoolean("SHOW_NOTIFICATION", isChecked).apply()
+                        if (isChecked) {
+                            // Запускаем сервис, если разрешение на уведомления получено
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                    (context as MainActivity).startNotificationService()
+                                }
+                            } else {
+                                (context as MainActivity).startNotificationService()
+                            }
+                        } else {
+                            (context as MainActivity).stopNotificationService()
+                        }
+                    }
+                )
+            }
+
+            Divider(color = Color.Black, thickness = 1.dp) // Разделитель после чекбокса
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = onSelectFolder,
                 modifier = Modifier.fillMaxWidth()
@@ -205,6 +257,8 @@ fun MainScreen(
                     }
                 )
             }
+
+
         }
     }
 }

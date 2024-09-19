@@ -20,5 +20,7 @@
     <string name="speech_prompt">Скажите что-нибудь</string>
     <string name="auto_save_setting">Сохранять заметку сразу после голосового ввода</string>
     <string name="file_saved">Файл сохранен</string>
+    <string name="add_notes_via_notification">Добавлять заметки через постоянное уведомление</string>
+    <string name="notification_service_stopped">Сервис уведомлений остановлен</string>
 
 </resources>
