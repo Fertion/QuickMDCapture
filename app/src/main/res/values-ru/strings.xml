@@ -25,7 +25,7 @@
     <string name="save_settings_title">Куда и как сохранять</string>
     <string name="yaml_settings_title">Настройки YAML</string>
     <string name="input_settings_title">Настройки ввода</string>
-    <string name="add_notes_methods_info">Вы также можете добавлять заметки через меню \"Поделиться\" и виджеты.</string>
+    <string name="add_notes_methods_info">Вы также можете добавлять заметки через меню \"Поделиться\" и виджеты на рабочем столе.</string>
     <string name="save_settings_info">Если файл с таким именем уже существует, информация будет добавлена в конец существующего файла.\n\nК примеру, вы можете использовать следующие символы для создания шаблона даты и времени:\n\nyyyy - год\nMM - месяц\ndd - день\nHH - час\nmm - минута\nss - секунда\n\nНапример, шаблон \"yyyy.MM.dd HH_mm_ss\" создаст имена файлов, подобные \"2023.04.26 15_30_00.md\".</string>
     <string name="info_dialog_title">Инфо</string>
     <string name="ok">Ок</string>
