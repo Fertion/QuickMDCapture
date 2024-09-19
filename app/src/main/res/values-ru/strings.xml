@@ -19,5 +19,6 @@
     <string name="speech_to_text">Голосовой ввод</string>
     <string name="speech_prompt">Скажите что-нибудь</string>
     <string name="auto_save_setting">Сохранять заметку сразу после голосового ввода</string>
+    <string name="file_saved">Файл сохранен</string>
 
 </resources>

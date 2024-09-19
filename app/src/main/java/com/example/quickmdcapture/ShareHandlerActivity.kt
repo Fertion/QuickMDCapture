@@ -28,7 +28,6 @@ class ShareHandlerActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
         val folderUriString = sharedPreferences.getString("FOLDER_URI", null)
         if (folderUriString == null) {
-            // Папка не выбрана, завершить обработку
             Toast.makeText(this, getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
             return
         }
@@ -36,7 +35,6 @@ class ShareHandlerActivity : AppCompatActivity() {
         val folderUri = Uri.parse(folderUriString)
         val documentFile = DocumentFile.fromTreeUri(this, folderUri)
         if (documentFile == null || !documentFile.canWrite()) {
-            // Нет доступа на запись в папку
             Toast.makeText(this, getString(R.string.note_error), Toast.LENGTH_SHORT).show()
             return
         }
@@ -83,7 +81,7 @@ class ShareHandlerActivity : AppCompatActivity() {
         if (uris != null) {
             uris.forEach { uri ->
                 if (type?.startsWith("text/") == true) {
-                    val sharedText = contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() } // Изменено здесь
+                    val sharedText = contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() }
                     if (sharedText != null) {
                         saveTextAsNote(sharedText, folder, sharedPreferences)
                     }
@@ -164,7 +162,7 @@ class ShareHandlerActivity : AppCompatActivity() {
                         inputStream.copyTo(outputStream)
                     }
                 }
-                Toast.makeText(this, "$fileName ${getString(R.string.note_saved)}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(this, getString(R.string.note_error), Toast.LENGTH_SHORT).show()
             }

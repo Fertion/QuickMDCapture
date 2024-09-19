@@ -19,5 +19,6 @@
     <string name="speech_to_text">Speech to text</string>
     <string name="speech_prompt">Say something</string>
     <string name="auto_save_setting">Save a note immediately after voice input</string>
+    <string name="file_saved">File saved</string>
 
 </resources>
