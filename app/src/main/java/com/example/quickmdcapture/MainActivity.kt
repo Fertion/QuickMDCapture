@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
                         .putString("FOLDER_URI", it.toString())
                         .apply()
                     Toast.makeText(this, getString(R.string.folder_selected, it), Toast.LENGTH_LONG).show()
-                    currentFolderUri = it.toString() // Обновляем состояние
+                    currentFolderUri = it.toString()
                 } else {
                     Toast.makeText(this, getString(R.string.error_selecting_folder, "Folder is not writable"), Toast.LENGTH_LONG).show()
                 }
@@ -99,7 +99,7 @@ fun MainScreen(
     var isDateCreatedEnabled by remember { mutableStateOf(false) }
     var propertyName by remember { mutableStateOf("created") }
     var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") }
-    var isAutoSaveEnabled by remember { mutableStateOf(false) } // Добавлено состояние автосохранения
+    var isAutoSaveEnabled by remember { mutableStateOf(false) }
 
     val sharedPreferences = LocalContext.current.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
 
@@ -107,7 +107,7 @@ fun MainScreen(
         isDateCreatedEnabled = sharedPreferences.getBoolean("SAVE_DATE_CREATED", false)
         propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
         noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
-        isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false) // Загрузка состояния автосохранения
+        isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false)
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
@@ -133,6 +133,21 @@ fun MainScreen(
                 maxLines = 2
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            TextField(
+                value = noteTitleTemplate,
+                onValueChange = {
+                    noteTitleTemplate = it
+                    sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", it).apply()
+                },
+                label = { Text(stringResource(id = R.string.note_title_template_hint)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Divider(color = Color.Black, thickness = 1.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -167,18 +182,9 @@ fun MainScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextField(
-                value = noteTitleTemplate,
-                onValueChange = {
-                    noteTitleTemplate = it
-                    sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", it).apply()
-                },
-                label = { Text(stringResource(id = R.string.note_title_template_hint)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            Divider(color = Color.Black, thickness = 1.dp)
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Чекбокс для автосохранения
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()

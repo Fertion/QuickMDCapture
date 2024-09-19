@@ -7,6 +7,7 @@
 # Roadmap
 
 - [x] Adding voice input
+- [x] Add notes and files using the "Share" option
 - [ ] Adding notes through widgets
 - [ ] Starting note addition via volume buttons, input is possible without unlocking the phone
 
