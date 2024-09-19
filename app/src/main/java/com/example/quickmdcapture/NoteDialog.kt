@@ -66,11 +66,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
 
         btnSpeech.setOnClickListener {
-            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.speech_prompt))
-            speechRecognizerLauncher.launch(intent)
+            startSpeechRecognition()
         }
     }
 
@@ -83,6 +79,14 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             saveNote(etNote.text.toString())
             dismiss() // Закрываем диалог после автосохранения
         }
+    }
+
+    fun startSpeechRecognition() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.speech_prompt))
+        speechRecognizerLauncher.launch(intent)
     }
 
     private fun saveNote(note: String) {

@@ -28,6 +28,10 @@ class TransparentActivity : AppCompatActivity() {
         }
         dialog.show()
 
+        if (intent.getBooleanExtra("START_VOICE_INPUT", false)) {
+            dialog.startSpeechRecognition()
+        }
+
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     }
 }

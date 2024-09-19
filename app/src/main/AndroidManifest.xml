@@ -27,7 +27,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".TransparentActivity"
             android:theme="@style/Theme.Transparent"
@@ -58,5 +57,28 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name=".NewWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/new_widget_info" />
+        </receiver>
+
+        <receiver android:name=".NewWidgetVoice"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/new_widget_voice_info" />
+        </receiver>
+
     </application>
+
 </manifest>
