@@ -8,8 +8,11 @@
 
 - [x] Adding voice input
 - [x] Add notes and files using the "Share" option
-- [ ] Adding notes through widgets
+- [x] Adding notes through widgets
 - [ ] Starting note addition via volume buttons, input is possible without unlocking the phone
+- [ ] A set of templates to allow saving different notes with various properties in different locations.
+- [ ] The ability to specify multiple properties for a date (for example, to create an updated property right away).
+- [ ] Save attachments in a separate folder and add a link to the new file(s) in the note.
 
 ---
 
