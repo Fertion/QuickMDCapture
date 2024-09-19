@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickMDCapture"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,9 +34,29 @@
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:exported="false" />
+
         <service
             android:name=".NotificationService"
             android:enabled="true"
             android:exported="false" />
+
+        <!-- Добавленный Activity для обработки функции поделиться -->
+        <activity
+            android:name=".ShareHandlerActivity"
+            android:exported="true"
+            android:enabled="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
     </application>
 </manifest>
