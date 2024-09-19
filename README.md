@@ -2,6 +2,15 @@
 
 [Download APK](https://github.com/Fertion/QuickMDCapture/releases/latest)
 
+---
+
+# Roadmap
+
+- [x] Adding voice input
+- [ ] Adding notes through widgets
+- [ ] Starting note addition via volume buttons, input is possible without unlocking the phone
+
+---
 
 This is an Android app that allows you to quickly create notes in MD format from the notification bar. This allows you to quickly create notes, as the notification panel can be opened quickly without distracting you from another app, such as the e-book you are reading. Originally, the app was created to work with [Obsidian](https://obsidian.md/), but it can also be used with other note-taking apps that support the .md format if needed.
 
