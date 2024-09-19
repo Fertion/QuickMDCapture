@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
@@ -48,8 +49,7 @@ class MainActivity : AppCompatActivity() {
     }
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         if (isGranted) {
-            // Проверяем состояние чекбокса перед запуском сервиса
-            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) { // Изменение: true по умолчанию
+            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) {
                 startNotificationService()
             }
         } else {
@@ -77,8 +77,7 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            // Проверяем состояние чекбокса перед запуском сервиса
-            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) { // Изменение: true по умолчанию
+            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) {
                 startNotificationService()
             }
         }
@@ -112,7 +111,7 @@ fun MainScreen(
     var propertyName by remember { mutableStateOf("created") }
     var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") }
     var isAutoSaveEnabled by remember { mutableStateOf(false) }
-    var isShowNotificationEnabled by remember { mutableStateOf(false) } // Состояние чекбокса для уведомления
+    var isShowNotificationEnabled by remember { mutableStateOf(false) }
 
     val sharedPreferences = LocalContext.current.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
     val context = LocalContext.current
@@ -122,7 +121,7 @@ fun MainScreen(
         propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
         noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
         isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false)
-        isShowNotificationEnabled = sharedPreferences.getBoolean("SHOW_NOTIFICATION", true) // Изменение: true по умолчанию
+        isShowNotificationEnabled = sharedPreferences.getBoolean("SHOW_NOTIFICATION", true)
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
@@ -133,132 +132,180 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // Чекбокс для уведомления (перенесен наверх)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            // Методы добавления заметок
+            Text(
+                text = stringResource(id = R.string.add_notes_methods_title),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Black
+            )
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             ) {
-                Text(
-                    stringResource(id = R.string.add_notes_via_notification),
-                    color = Color.Black,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = isShowNotificationEnabled,
-                    onCheckedChange = { isChecked ->
-                        isShowNotificationEnabled = isChecked
-                        sharedPreferences.edit().putBoolean("SHOW_NOTIFICATION", isChecked).apply()
-                        if (isChecked) {
-                            // Запускаем сервис, если разрешение на уведомления получено
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                    (context as MainActivity).startNotificationService()
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(id = R.string.add_notes_via_notification),
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Switch(
+                            checked = isShowNotificationEnabled,
+                            onCheckedChange = { isChecked ->
+                                isShowNotificationEnabled = isChecked
+                                sharedPreferences.edit().putBoolean("SHOW_NOTIFICATION", isChecked).apply()
+                                if (isChecked) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                        if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                            (context as MainActivity).startNotificationService()
+                                        }
+                                    } else {
+                                        (context as MainActivity).startNotificationService()
+                                    }
+                                } else {
+                                    (context as MainActivity).stopNotificationService()
                                 }
-                            } else {
-                                (context as MainActivity).startNotificationService()
                             }
-                        } else {
-                            (context as MainActivity).stopNotificationService()
-                        }
+                        )
                     }
-                )
+                }
             }
 
-            Divider(color = Color.Black, thickness = 1.dp) // Разделитель после чекбокса
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onSelectFolder,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(id = R.string.select_folder))
-            }
+            // Куда и как сохранять
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(id = R.string.folder_selected, getFolderDisplayName(currentFolderUri)),
-                color = Color.Black,
+                text = stringResource(id = R.string.save_settings_title),
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth(),
-                overflow = TextOverflow.Visible,
-                maxLines = 2
+                color = Color.Black
             )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextField(
-                value = noteTitleTemplate,
-                onValueChange = {
-                    noteTitleTemplate = it
-                    sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", it).apply()
-                },
-                label = { Text(stringResource(id = R.string.note_title_template_hint)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Divider(color = Color.Black, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             ) {
-                Text(
-                    stringResource(id = R.string.save_date_created),
-                    color = Color.Black,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = isDateCreatedEnabled,
-                    onCheckedChange = {
-                        isDateCreatedEnabled = it
-                        sharedPreferences.edit().putBoolean("SAVE_DATE_CREATED", it).apply()
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Button(
+                        onClick = onSelectFolder,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(id = R.string.select_folder))
                     }
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(id = R.string.folder_selected, getFolderDisplayName(currentFolderUri)),
+                        color = Color.Black,
+                        modifier = Modifier.fillMaxWidth(),
+                        overflow = TextOverflow.Visible,
+                        maxLines = 2
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = propertyName,
-                onValueChange = {
-                    propertyName = it
-                    sharedPreferences.edit().putString("PROPERTY_NAME", it).apply()
-                },
-                enabled = isDateCreatedEnabled,
-                label = { Text(stringResource(id = R.string.property_name_hint)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Divider(color = Color.Black, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    stringResource(id = R.string.auto_save_setting),
-                    color = Color.Black,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = isAutoSaveEnabled,
-                    onCheckedChange = {
-                        isAutoSaveEnabled = it
-                        sharedPreferences.edit().putBoolean("AUTO_SAVE_ENABLED", it).apply()
-                    }
-                )
+                    TextField(
+                        value = noteTitleTemplate,
+                        onValueChange = {
+                            noteTitleTemplate = it
+                            sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", it).apply()
+                        },
+                        label = { Text(stringResource(id = R.string.note_title_template_hint)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
+            // Настройки YAML
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(id = R.string.yaml_settings_title),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Black
+            )
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(id = R.string.save_date_created),
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Switch(
+                            checked = isDateCreatedEnabled,
+                            onCheckedChange = {
+                                isDateCreatedEnabled = it
+                                sharedPreferences.edit().putBoolean("SAVE_DATE_CREATED", it).apply()
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
 
+                    TextField(
+                        value = propertyName,
+                        onValueChange = {
+                            propertyName = it
+                            sharedPreferences.edit().putString("PROPERTY_NAME", it).apply()
+                        },
+                        enabled = isDateCreatedEnabled,
+                        label = { Text(stringResource(id = R.string.property_name_hint)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            // Настройки ввода
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(id = R.string.input_settings_title),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Black
+            )
+            OutlinedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            stringResource(id = R.string.auto_save_setting),
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Switch(
+                            checked = isAutoSaveEnabled,
+                            onCheckedChange = {
+                                isAutoSaveEnabled = it
+                                sharedPreferences.edit().putBoolean("AUTO_SAVE_ENABLED", it).apply()
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }

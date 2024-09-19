@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">QuickMDCapture</string>
     <string name="select_folder">Select Folder</string>
@@ -22,5 +21,9 @@
     <string name="file_saved">File saved</string>
     <string name="add_notes_via_notification">Add notes via persistent notification</string>
     <string name="notification_service_stopped">Notification service stopped</string>
+    <string name="add_notes_methods_title">Methods of adding notes</string>
+    <string name="save_settings_title">Where and how to save</string>
+    <string name="yaml_settings_title">YAML settings</string>
+    <string name="input_settings_title">Input settings</string>
 
 </resources>

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">QuickMDCapture</string>
     <string name="select_folder">Выбрать папку</string>
@@ -22,5 +21,9 @@
     <string name="file_saved">Файл сохранен</string>
     <string name="add_notes_via_notification">Добавлять заметки через постоянное уведомление</string>
     <string name="notification_service_stopped">Сервис уведомлений остановлен</string>
+    <string name="add_notes_methods_title">Методы добавления заметок</string>
+    <string name="save_settings_title">Куда и как сохранять</string>
+    <string name="yaml_settings_title">Настройки YAML</string>
+    <string name="input_settings_title">Настройки ввода</string>
 
 </resources>
