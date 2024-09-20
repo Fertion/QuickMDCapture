@@ -8,8 +8,11 @@
 
 - [x] Adding voice input
 - [x] Add notes and files using the "Share" option
-- [x] Adding notes through widgets
+- [x] Add notes using simple widgets
+- [x] Distribute the settings into sections, information buttons with clarifications
 - [ ] Starting note addition via volume buttons, input is possible without unlocking the phone
+- [ ] A widget displaying a list of the last 3-5 added notes; clicking on them opens the selected note via URI in Obsidian
+- [ ] A text input form widget (similar to a regular text form, but fixed on the desktop rather than a pop-up)
 - [ ] A set of templates to allow saving different notes with various properties in different locations.
 - [ ] The ability to specify multiple properties for a date (for example, to create an updated property right away).
 - [ ] Save attachments in a separate folder and add a link to the new file(s) in the note.
