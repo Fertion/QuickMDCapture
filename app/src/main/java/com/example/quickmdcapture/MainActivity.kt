@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    var currentFolderUri by mutableStateOf("")
+    private var currentFolderUri by mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,13 +92,13 @@ class MainActivity : AppCompatActivity() {
             .getString("FOLDER_URI", getString(R.string.folder_not_selected)) ?: getString(R.string.folder_not_selected)
     }
 
-    public fun startNotificationService() {
+    fun startNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
         ContextCompat.startForegroundService(this, serviceIntent)
         Toast.makeText(this, getString(R.string.notification_service_started), Toast.LENGTH_SHORT).show()
     }
 
-    public fun stopNotificationService() {
+    fun stopNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
         stopService(serviceIntent)
         Toast.makeText(this, getString(R.string.notification_service_stopped), Toast.LENGTH_SHORT).show()
@@ -336,13 +336,13 @@ fun MainScreen(
         }
     }
     if (showAddNotesMethodsInfoDialog) {
-        showInfoDialog(stringResource(id = R.string.add_notes_methods_info)) {
+        ShowInfoDialog(stringResource(id = R.string.add_notes_methods_info)) {
             showAddNotesMethodsInfoDialog = false
         }
     }
 
     if (showSaveSettingsInfoDialog) {
-        showInfoDialog(stringResource(id = R.string.save_settings_info)) {
+        ShowInfoDialog(stringResource(id = R.string.save_settings_info)) {
             showSaveSettingsInfoDialog = false
         }
     }
@@ -355,7 +355,7 @@ fun getFolderDisplayName(uri: String): String {
 }
 
 @Composable
-fun showInfoDialog(message: String, onDismiss: () -> Unit) {
+fun ShowInfoDialog(message: String, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(id = R.string.info_dialog_title)) },

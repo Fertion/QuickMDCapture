@@ -77,8 +77,7 @@ class ShareHandlerActivity : AppCompatActivity() {
     }
 
     private fun handleActionSendMultiple(intent: Intent, type: String?, folder: DocumentFile, sharedPreferences: SharedPreferences) {
-        val uris = getSharedUris(intent)
-        if (uris != null) {
+        getSharedUris(intent)?.let { uris ->
             uris.forEach { uri ->
                 if (type?.startsWith("text/") == true) {
                     val sharedText = contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() }
