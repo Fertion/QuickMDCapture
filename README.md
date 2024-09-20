@@ -1,6 +1,7 @@
 ![ic_launcher main (1)](https://github.com/user-attachments/assets/dbfb65c5-6e39-4880-8392-8965f19c87ea)
 
 [Download APK](https://github.com/Fertion/QuickMDCapture/releases/latest)
+![Downloads](https://img.shields.io/github/downloads/Fertion/QuickMDCapture/total)
 
 ---
 
