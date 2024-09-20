@@ -27,10 +27,14 @@ The app creates a persistent notification in the notification panel.
 
 When you tap on it, a dialog box opens for entering your note.
 
-<img src="https://github.com/user-attachments/assets/dab98a8d-114a-4980-923a-b969d45c2fd9" width="230"/>
+<img src="https://github.com/user-attachments/assets/6688ea07-d264-42a6-82c2-f8b0b7e8e596" width="230"/>
 
 After that, the file is saved in .md format at the path specified in the settings.
 
-<img src="https://github.com/user-attachments/assets/8351ec7d-0926-42f1-9cfc-4960778b8d6a" width="230"/>
+<img src="https://github.com/user-attachments/assets/d09754d5-a94b-43e2-80c6-9d8f68ba55f9" width="230"/>
+
+You can also add notes via widgets on your desktop.
+
+<img src="https://github.com/user-attachments/assets/ca0be0b9-4801-4bdf-a56d-3b93da9b2e7c" width="230"/>
 
 **Important: I am not a programmer, and the code was written by neural networks, so I don't fully understand how it works in detail. Therefore, while I’ve tested the app to the best of my ability, use it at your own risk. I would also greatly appreciate any feedback and advice.**
