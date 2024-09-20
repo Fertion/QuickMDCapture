@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 
 class MainActivity : AppCompatActivity() {
@@ -93,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 
     public fun startNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
-        startForegroundService(serviceIntent)
+        ContextCompat.startForegroundService(this, serviceIntent)
         Toast.makeText(this, getString(R.string.notification_service_started), Toast.LENGTH_SHORT).show()
     }
 
