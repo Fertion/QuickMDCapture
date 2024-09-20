@@ -111,6 +111,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             val contentResolver = context.contentResolver
 
             val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
+            val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
             val fileName = "${timeStamp.replace(":", "_")}.md"
 
             val documentFile = DocumentFile.fromTreeUri(context, folderUri)
@@ -130,7 +131,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 if (fileDoc != null) {
                     contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
                         val dataToWrite = if (isDateCreatedEnabled) {
-                            "---\n$propertyName: ${timeStamp}\n---\n$note"
+                            "---\n$propertyName: ${fullTimeStamp}\n---\n$note"
                         } else {
                             note
                         }

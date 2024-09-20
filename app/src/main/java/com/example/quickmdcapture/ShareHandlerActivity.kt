@@ -125,6 +125,7 @@ class ShareHandlerActivity : AppCompatActivity() {
         val noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
 
         val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
+        val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
         val fileName = "${timeStamp.replace(":", "_")}.md"
 
         val existingFile = folder.findFile(fileName)
@@ -138,7 +139,7 @@ class ShareHandlerActivity : AppCompatActivity() {
             if (newFile != null) {
                 contentResolver.openOutputStream(newFile.uri)?.use { outputStream ->
                     val dataToWrite = if (isDateCreatedEnabled) {
-                        "---\n$propertyName: ${timeStamp}\n---\n$text"
+                        "---\n$propertyName: ${fullTimeStamp}\n---\n$text"
                     } else {
                         text
                     }
