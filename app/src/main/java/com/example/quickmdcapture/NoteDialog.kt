@@ -73,7 +73,15 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     private fun updateNoteText(text: String) {
         val etNote = findViewById<EditText>(R.id.etNote)
         val currentText = etNote.text.toString()
-        etNote.setText("$currentText $text")
+
+        // Добавляем пробел только если строка не пустая
+        val newText = if (currentText.isNotEmpty()) {
+            "$currentText $text"
+        } else {
+            text
+        }
+
+        etNote.setText(newText)
 
         if (isAutoSaveEnabled) {
             saveNote(etNote.text.toString())
