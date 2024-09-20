@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -332,6 +334,38 @@ fun MainScreen(
                         }
                     }
                 }
+                // Исходный код
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(id = R.string.source_code_title),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Black
+                )
+                OutlinedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        if (Locale.getDefault().language == "ru") {
+                            ClickableText(
+                                text = stringResource(id = R.string.github_link),
+                                onClick = { openLink(context, "https://github.com/Fertion/QuickMDCapture") }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            ClickableText(
+                                text = stringResource(id = R.string.telegram_link),
+                                onClick = { openLink(context, "https://t.me/for_obsidian") }
+                            )
+                        } else {
+                            ClickableText(
+                                text = stringResource(id = R.string.github_link),
+                                onClick = { openLink(context, "https://github.com/Fertion/QuickMDCapture") }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -368,4 +402,18 @@ fun ShowInfoDialog(message: String, onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+@Composable
+fun ClickableText(text: String, onClick: () -> Unit) {
+    Text(
+        text = text,
+        color = Color.Blue,
+        modifier = Modifier.clickable { onClick() }
+    )
+}
+
+fun openLink(context: Context, url: String) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    context.startActivity(intent)
 }
