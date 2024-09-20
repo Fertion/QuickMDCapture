@@ -129,7 +129,7 @@ class ShareHandlerActivity : AppCompatActivity() {
 
         val existingFile = folder.findFile(fileName)
         if (existingFile != null) {
-            contentResolver.openOutputStream(existingFile.uri, "a")?.use { outputStream ->
+            contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
                 outputStream.write("\n$text".toByteArray())
             }
             Toast.makeText(this, getString(R.string.note_appended), Toast.LENGTH_SHORT).show()
