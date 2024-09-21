@@ -32,4 +32,7 @@
     <string name="source_code_title">Source code</string>
     <string name="github_link">GitHub repository</string>
     <string name="telegram_link">Telegram channel</string>
+    <string name="notification_permission_needed">Notification Permission Needed</string>
+    <string name="notification_permission_explanation">This app needs permission to show notifications in order to quickly add notes.</string>
+    <string name="notification_permission_denied">Notification permission denied.</string>
 </resources>

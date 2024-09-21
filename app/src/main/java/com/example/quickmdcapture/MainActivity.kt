@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -53,37 +54,53 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private var shouldUpdateNotificationSwitch = false // Флаг для обновления галочки
+
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         if (isGranted) {
             if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) {
                 startNotificationService()
             }
         } else {
-            Toast.makeText(this, getString(R.string.error_selecting_folder, "Notification permission not granted"), Toast.LENGTH_LONG).show()
+            Toast.makeText(this, getString(R.string.notification_permission_denied), Toast.LENGTH_LONG).show()
+            // Обновляем галочку, только если был запрос разрешений
+            if (shouldUpdateNotificationSwitch) {
+                updateShowNotificationPreference(false)
+                shouldUpdateNotificationSwitch = false // Сбрасываем флаг
+            }
         }
     }
 
     private var currentFolderUri by mutableStateOf("")
+    private var isShowNotificationEnabled by mutableStateOf(false) // Состояние для галочки
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         currentFolderUri = getString(R.string.folder_not_selected)
-
         currentFolderUri = getSelectedFolder()
+
+        // Инициализируем isShowNotificationEnabled из SharedPreferences
+        isShowNotificationEnabled = getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)
 
         setContent {
             MaterialTheme {
                 MainScreen(
                     onSelectFolder = { folderPicker.launch(null) },
-                    currentFolderUri = currentFolderUri
+                    currentFolderUri = currentFolderUri,
+                    checkNotificationPermission = { checkNotificationPermission() },
+                    isShowNotificationEnabled = isShowNotificationEnabled, // Передаем состояние в MainScreen
+                    updateShowNotification = { isEnabled -> updateShowNotificationPreference(isEnabled) }
                 )
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            if (isShowNotificationEnabled) { // Используем состояние для проверки
+                checkNotificationPermission()
+            }
         } else {
-            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) {
+            if (isShowNotificationEnabled) { // Используем состояние для проверки
                 startNotificationService()
             }
         }
@@ -105,19 +122,55 @@ class MainActivity : AppCompatActivity() {
         stopService(serviceIntent)
         Toast.makeText(this, getString(R.string.notification_service_stopped), Toast.LENGTH_SHORT).show()
     }
+
+    private fun checkNotificationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            startNotificationService()
+        } else {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                showPermissionExplanationDialog()
+            } else {
+                shouldUpdateNotificationSwitch = true // Устанавливаем флаг перед запросом
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
+    private fun showPermissionExplanationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.notification_permission_needed))
+            .setMessage(getString(R.string.notification_permission_explanation))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                shouldUpdateNotificationSwitch = true // Устанавливаем флаг перед запросом
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+                updateShowNotificationPreference(false)
+            }
+            .show()
+    }
+
+    private fun updateShowNotificationPreference(isEnabled: Boolean) {
+        isShowNotificationEnabled = isEnabled // Обновляем состояние галочки
+        getSharedPreferences("QuickMDCapture", MODE_PRIVATE).edit().putBoolean("SHOW_NOTIFICATION", isEnabled).apply()
+        // Пересоздание UI больше не требуется
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     onSelectFolder: () -> Unit,
-    currentFolderUri: String
+    currentFolderUri: String,
+    checkNotificationPermission: () -> Unit,
+    isShowNotificationEnabled: Boolean, // Принимаем состояние галочки
+    updateShowNotification: (Boolean) -> Unit
 ) {
     var isDateCreatedEnabled by remember { mutableStateOf(false) }
     var propertyName by remember { mutableStateOf("created") }
     var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") }
     var isAutoSaveEnabled by remember { mutableStateOf(false) }
-    var isShowNotificationEnabled by remember { mutableStateOf(false) }
+    // var isShowNotificationEnabled by remember { mutableStateOf(false) } // Удаляем эту строку
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -130,7 +183,7 @@ fun MainScreen(
         propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
         noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
         isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false)
-        isShowNotificationEnabled = sharedPreferences.getBoolean("SHOW_NOTIFICATION", true)
+        // isShowNotificationEnabled = sharedPreferences.getBoolean("SHOW_NOTIFICATION", true) // Удаляем эту строку
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
@@ -176,15 +229,12 @@ fun MainScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Switch(
-                                checked = isShowNotificationEnabled,
+                                checked = isShowNotificationEnabled, // Используем переданное состояние
                                 onCheckedChange = { isChecked ->
-                                    isShowNotificationEnabled = isChecked
-                                    sharedPreferences.edit().putBoolean("SHOW_NOTIFICATION", isChecked).apply()
+                                    updateShowNotification(isChecked) // Обновляем состояние и SharedPreferences
                                     if (isChecked) {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                            if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                                (context as MainActivity).startNotificationService()
-                                            }
+                                            checkNotificationPermission()
                                         } else {
                                             (context as MainActivity).startNotificationService()
                                         }

@@ -32,4 +32,7 @@
     <string name="source_code_title">Ссылки</string>
     <string name="github_link">Репозиторий GitHub</string>
     <string name="telegram_link">Telegram канал</string>
+    <string name="notification_permission_needed">Требуется разрешение на уведомления</string>
+    <string name="notification_permission_explanation">Этому приложению требуется разрешение на показ уведомлений для быстрого добавления заметок.</string>
+    <string name="notification_permission_denied">Разрешение на уведомления отклонено.</string>
 </resources>
