@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -22,10 +23,13 @@ import java.util.Locale
 class NoteDialog(private val activity: AppCompatActivity, private val isAutoSaveEnabled: Boolean) : Dialog(activity) {
 
     private lateinit var speechRecognizerLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
+    private lateinit var settingsViewModel: SettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.note_dialog)
+
+        settingsViewModel = ViewModelProvider(activity)[SettingsViewModel::class.java]
 
         window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
@@ -74,7 +78,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val etNote = findViewById<EditText>(R.id.etNote)
         val currentText = etNote.text.toString()
 
-        // Добавляем пробел только если строка не пустая
         val newText = if (currentText.isNotEmpty()) {
             "$currentText $text"
         } else {
@@ -85,7 +88,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         if (isAutoSaveEnabled) {
             saveNote(etNote.text.toString())
-            dismiss() // Закрываем диалог после автосохранения
+            dismiss()
         }
     }
 
@@ -98,19 +101,13 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     }
 
     private fun saveNote(note: String) {
-        val folderUriString = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-            .getString("FOLDER_URI", null)
-        val propertyName = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-            .getString("PROPERTY_NAME", "created")
+        val folderUriString = settingsViewModel.folderUri.value
+        val propertyName = settingsViewModel.propertyName.value
+        val noteTitleTemplate = settingsViewModel.noteTitleTemplate.value
+        val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
 
-        val noteTitleTemplate = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-            .getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss")
-
-        val isDateCreatedEnabled = context.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-            .getBoolean("SAVE_DATE_CREATED", false)
-
-        if (folderUriString == null) {
-            Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+        if (folderUriString == context.getString(R.string.folder_not_selected)) {
+            Toast.makeText(context, context.getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
             return
         }
 

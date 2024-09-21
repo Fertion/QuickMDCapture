@@ -28,7 +28,7 @@
     <string name="add_notes_methods_info">You can also add notes via the \"Share\" menu and widgets.</string>
     <string name="save_settings_info">If a file with the same name already exists, the information will be appended to the end of the existing file.\n\nFor example, you can use the following characters to build the date and time template:\n\nyyyy - year\nMM - month\ndd - day\nHH - hour\nmm - minute\nss - second\n\nFor example, the template \"yyyy.MM.dd HH_mm_ss\" will create file names like \"2023.04.26 15_30_00.md\"</string>
     <string name="info_dialog_title">Info</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="source_code_title">Source code</string>
     <string name="github_link">GitHub repository</string>
     <string name="telegram_link">Telegram channel</string>
