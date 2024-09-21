@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.ViewModelProvider
 
 class NotificationService : Service() {
 
@@ -13,18 +14,23 @@ class NotificationService : Service() {
         private const val NOTIFICATION_ID = 1
     }
 
+    private lateinit var settingsViewModel: SettingsViewModel
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+
+        settingsViewModel = ViewModelProvider.AndroidViewModelFactory(application).create(SettingsViewModel::class.java)
+
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.app_name) // Используем локализованное название
-            val descriptionText = getString(R.string.add_note_notification_text) // Локализованное описание для уведомления
+            val name = getString(R.string.app_name)
+            val descriptionText = getString(R.string.add_note_notification_text)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
@@ -50,8 +56,8 @@ class NotificationService : Service() {
         )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.app_name)) // Используем локализованное название
-            .setContentText(getString(R.string.add_note_notification_text)) // Локализованное текст уведомления
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.add_note_notification_text))
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

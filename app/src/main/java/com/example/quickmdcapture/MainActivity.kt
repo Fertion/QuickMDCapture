@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.ViewModelProvider
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -41,11 +42,8 @@ class MainActivity : AppCompatActivity() {
 
                 val documentFile = DocumentFile.fromTreeUri(this, it)
                 if (documentFile != null && documentFile.canWrite()) {
-                    getSharedPreferences("QuickMDCapture", MODE_PRIVATE).edit()
-                        .putString("FOLDER_URI", it.toString())
-                        .apply()
+                    settingsViewModel.saveFolderUri(it.toString())
                     Toast.makeText(this, getString(R.string.folder_selected, it), Toast.LENGTH_LONG).show()
-                    currentFolderUri = it.toString()
                 } else {
                     Toast.makeText(this, getString(R.string.error_selecting_folder, "Folder is not writable"), Toast.LENGTH_LONG).show()
                 }
@@ -55,61 +53,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var shouldUpdateNotificationSwitch = false // Флаг для обновления галочки
-
     private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         if (isGranted) {
-            if (getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)) {
+            if (settingsViewModel.isShowNotificationEnabled.value) {
                 startNotificationService()
             }
         } else {
             Toast.makeText(this, getString(R.string.notification_permission_denied), Toast.LENGTH_LONG).show()
-            // Обновляем галочку, только если был запрос разрешений
-            if (shouldUpdateNotificationSwitch) {
-                updateShowNotificationPreference(false)
-                shouldUpdateNotificationSwitch = false // Сбрасываем флаг
-            }
+            settingsViewModel.updateShowNotification(false)
         }
     }
 
-    private var currentFolderUri by mutableStateOf("")
-    private var isShowNotificationEnabled by mutableStateOf(false) // Состояние для галочки
+    private lateinit var settingsViewModel: SettingsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        currentFolderUri = getString(R.string.folder_not_selected)
-        currentFolderUri = getSelectedFolder()
-
-        // Инициализируем isShowNotificationEnabled из SharedPreferences
-        isShowNotificationEnabled = getSharedPreferences("QuickMDCapture", MODE_PRIVATE).getBoolean("SHOW_NOTIFICATION", true)
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
         setContent {
             MaterialTheme {
                 MainScreen(
                     onSelectFolder = { folderPicker.launch(null) },
-                    currentFolderUri = currentFolderUri,
-                    checkNotificationPermission = { checkNotificationPermission() },
-                    isShowNotificationEnabled = isShowNotificationEnabled, // Передаем состояние в MainScreen
-                    updateShowNotification = { isEnabled -> updateShowNotificationPreference(isEnabled) }
+                    settingsViewModel = settingsViewModel,
+                    checkNotificationPermission = { checkNotificationPermission() }
                 )
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (isShowNotificationEnabled) { // Используем состояние для проверки
+            if (settingsViewModel.isShowNotificationEnabled.value) {
                 checkNotificationPermission()
             }
         } else {
-            if (isShowNotificationEnabled) { // Используем состояние для проверки
+            if (settingsViewModel.isShowNotificationEnabled.value) {
                 startNotificationService()
             }
         }
     }
 
-    private fun getSelectedFolder(): String {
-        return getSharedPreferences("QuickMDCapture", MODE_PRIVATE)
-            .getString("FOLDER_URI", getString(R.string.folder_not_selected)) ?: getString(R.string.folder_not_selected)
-    }
 
     fun startNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
@@ -130,7 +111,6 @@ class MainActivity : AppCompatActivity() {
             if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
                 showPermissionExplanationDialog()
             } else {
-                shouldUpdateNotificationSwitch = true // Устанавливаем флаг перед запросом
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
@@ -141,19 +121,12 @@ class MainActivity : AppCompatActivity() {
             .setTitle(getString(R.string.notification_permission_needed))
             .setMessage(getString(R.string.notification_permission_explanation))
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                shouldUpdateNotificationSwitch = true // Устанавливаем флаг перед запросом
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
             .setNegativeButton(getString(R.string.cancel)) { _, _ ->
-                updateShowNotificationPreference(false)
+                settingsViewModel.updateShowNotification(false)
             }
             .show()
-    }
-
-    private fun updateShowNotificationPreference(isEnabled: Boolean) {
-        isShowNotificationEnabled = isEnabled // Обновляем состояние галочки
-        getSharedPreferences("QuickMDCapture", MODE_PRIVATE).edit().putBoolean("SHOW_NOTIFICATION", isEnabled).apply()
-        // Пересоздание UI больше не требуется
     }
 }
 
@@ -161,30 +134,20 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun MainScreen(
     onSelectFolder: () -> Unit,
-    currentFolderUri: String,
-    checkNotificationPermission: () -> Unit,
-    isShowNotificationEnabled: Boolean, // Принимаем состояние галочки
-    updateShowNotification: (Boolean) -> Unit
+    settingsViewModel: SettingsViewModel,
+    checkNotificationPermission: () -> Unit
 ) {
-    var isDateCreatedEnabled by remember { mutableStateOf(false) }
-    var propertyName by remember { mutableStateOf("created") }
-    var noteTitleTemplate by remember { mutableStateOf("yyyy.MM.dd HH_mm_ss") }
-    var isAutoSaveEnabled by remember { mutableStateOf(false) }
-    // var isShowNotificationEnabled by remember { mutableStateOf(false) } // Удаляем эту строку
+    val context = LocalContext.current
+
+    val isShowNotificationEnabled by settingsViewModel.isShowNotificationEnabled.collectAsState()
+    val isDateCreatedEnabled by settingsViewModel.isDateCreatedEnabled.collectAsState()
+    val propertyName by settingsViewModel.propertyName.collectAsState()
+    val noteTitleTemplate by settingsViewModel.noteTitleTemplate.collectAsState()
+    val isAutoSaveEnabled by settingsViewModel.isAutoSaveEnabled.collectAsState()
+    val currentFolderUri by settingsViewModel.folderUri.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
-
-    val sharedPreferences = LocalContext.current.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        isDateCreatedEnabled = sharedPreferences.getBoolean("SAVE_DATE_CREATED", false)
-        propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
-        noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
-        isAutoSaveEnabled = sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false)
-        // isShowNotificationEnabled = sharedPreferences.getBoolean("SHOW_NOTIFICATION", true) // Удаляем эту строку
-    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
         LazyColumn(
@@ -229,9 +192,9 @@ fun MainScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Switch(
-                                checked = isShowNotificationEnabled, // Используем переданное состояние
+                                checked = isShowNotificationEnabled,
                                 onCheckedChange = { isChecked ->
-                                    updateShowNotification(isChecked) // Обновляем состояние и SharedPreferences
+                                    settingsViewModel.updateShowNotification(isChecked)
                                     if (isChecked) {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                             checkNotificationPermission()
@@ -290,8 +253,7 @@ fun MainScreen(
                         TextField(
                             value = noteTitleTemplate,
                             onValueChange = {
-                                noteTitleTemplate = it
-                                sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", it).apply()
+                                settingsViewModel.updateNoteTitleTemplate(it)
                             },
                             label = { Text(stringResource(id = R.string.note_title_template_hint)) },
                             modifier = Modifier.fillMaxWidth()
@@ -327,9 +289,7 @@ fun MainScreen(
                             Switch(
                                 checked = isDateCreatedEnabled,
                                 onCheckedChange = {
-                                    isDateCreatedEnabled = it
-                                    sharedPreferences.edit().putBoolean("SAVE_DATE_CREATED", it)
-                                        .apply()
+                                    settingsViewModel.updateDateCreatedEnabled(it)
                                 }
                             )
                         }
@@ -338,8 +298,7 @@ fun MainScreen(
                         TextField(
                             value = propertyName,
                             onValueChange = {
-                                propertyName = it
-                                sharedPreferences.edit().putString("PROPERTY_NAME", it).apply()
+                                settingsViewModel.updatePropertyName(it)
                             },
                             enabled = isDateCreatedEnabled,
                             label = { Text(stringResource(id = R.string.property_name_hint)) },
@@ -376,9 +335,7 @@ fun MainScreen(
                             Switch(
                                 checked = isAutoSaveEnabled,
                                 onCheckedChange = {
-                                    isAutoSaveEnabled = it
-                                    sharedPreferences.edit().putBoolean("AUTO_SAVE_ENABLED", it)
-                                        .apply()
+                                    settingsViewModel.updateAutoSaveEnabled(it)
                                 }
                             )
                         }

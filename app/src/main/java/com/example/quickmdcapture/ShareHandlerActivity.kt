@@ -2,21 +2,26 @@ package com.example.quickmdcapture
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
-import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class ShareHandlerActivity : AppCompatActivity() {
 
+    private lateinit var settingsViewModel: SettingsViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+
         handleIntent(intent)
         finish()
     }
@@ -25,9 +30,8 @@ class ShareHandlerActivity : AppCompatActivity() {
         val action = intent.action
         val type = intent.type
 
-        val sharedPreferences = getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
-        val folderUriString = sharedPreferences.getString("FOLDER_URI", null)
-        if (folderUriString == null) {
+        val folderUriString = settingsViewModel.folderUri.value
+        if (folderUriString == getString(R.string.folder_not_selected)) {
             Toast.makeText(this, getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
             return
         }
@@ -41,10 +45,10 @@ class ShareHandlerActivity : AppCompatActivity() {
 
         when (action) {
             Intent.ACTION_SEND -> {
-                handleActionSend(intent, type, documentFile, sharedPreferences)
+                handleActionSend(intent, type, documentFile)
             }
             Intent.ACTION_SEND_MULTIPLE -> {
-                handleActionSendMultiple(intent, type, documentFile, sharedPreferences)
+                handleActionSendMultiple(intent, type, documentFile)
             }
             else -> {
                 // Unsupported действие
@@ -52,12 +56,12 @@ class ShareHandlerActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleActionSend(intent: Intent, type: String?, folder: DocumentFile, sharedPreferences: SharedPreferences) {
+    private fun handleActionSend(intent: Intent, type: String?, folder: DocumentFile) {
         when {
             type?.startsWith("text/") == true -> {
                 val sharedText = getSharedText(intent)
                 if (sharedText != null) {
-                    saveTextAsNote(sharedText, folder, sharedPreferences)
+                    saveTextAsNote(sharedText, folder)
                 }
             }
             type?.startsWith("image/") == true || type?.startsWith("application/") == true ||
@@ -76,13 +80,13 @@ class ShareHandlerActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleActionSendMultiple(intent: Intent, type: String?, folder: DocumentFile, sharedPreferences: SharedPreferences) {
+    private fun handleActionSendMultiple(intent: Intent, type: String?, folder: DocumentFile) {
         getSharedUris(intent)?.let { uris ->
             uris.forEach { uri ->
                 if (type?.startsWith("text/") == true) {
                     val sharedText = contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() }
                     if (sharedText != null) {
-                        saveTextAsNote(sharedText, folder, sharedPreferences)
+                        saveTextAsNote(sharedText, folder)
                     }
                 } else {
                     saveFile(uri, folder)
@@ -118,10 +122,10 @@ class ShareHandlerActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveTextAsNote(text: String, folder: DocumentFile, sharedPreferences: SharedPreferences) {
-        val isDateCreatedEnabled = sharedPreferences.getBoolean("SAVE_DATE_CREATED", false)
-        val propertyName = sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created"
-        val noteTitleTemplate = sharedPreferences.getString("NOTE_TITLE_TEMPLATE", "yyyy.MM.dd HH_mm_ss") ?: "yyyy.MM.dd HH_mm_ss"
+    private fun saveTextAsNote(text: String, folder: DocumentFile) {
+        val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
+        val propertyName = settingsViewModel.propertyName.value
+        val noteTitleTemplate = settingsViewModel.noteTitleTemplate.value
 
         val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
         val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
