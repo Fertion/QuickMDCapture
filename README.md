@@ -1,7 +1,17 @@
 ![ic_launcher main (1)](https://github.com/user-attachments/assets/dbfb65c5-6e39-4880-8392-8965f19c87ea)
 
-[Download APK](https://github.com/Fertion/QuickMDCapture/releases/latest)
+# Installation
+
+[<img src="https://github.com/user-attachments/assets/d34542fa-ba2b-43ed-a942-a73a66f69529"
+    alt="Get it on GitHub"
+    height="80">](https://github.com/Fertion/QuickMDCapture/releases/latest)
 ![Downloads](https://img.shields.io/github/downloads/Fertion/QuickMDCapture/total)
+
+### Or use Obtainium
+
+1. Install [Obtainium](https://github.com/ImranR98/Obtainium/blob/main/README.md#installation)
+2. Add the app by URL:  
+   `https://github.com/Fertion/QuickMDCapture`
 
 ---
 
