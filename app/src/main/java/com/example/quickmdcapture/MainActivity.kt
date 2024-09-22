@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,36 +34,66 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        uri?.let {
-            try {
-                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                contentResolver.takePersistableUriPermission(it, takeFlags)
+    private val folderPicker =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            uri?.let {
+                try {
+                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    contentResolver.takePersistableUriPermission(it, takeFlags)
 
-                val documentFile = DocumentFile.fromTreeUri(this, it)
-                if (documentFile != null && documentFile.canWrite()) {
-                    settingsViewModel.saveFolderUri(it.toString())
-                    Toast.makeText(this, getString(R.string.folder_selected, it), Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this, getString(R.string.error_selecting_folder, "Folder is not writable"), Toast.LENGTH_LONG).show()
+                    val documentFile = DocumentFile.fromTreeUri(this, it)
+                    if (documentFile != null && documentFile.canWrite()) {
+                        settingsViewModel.saveFolderUri(it.toString())
+                        Toast.makeText(
+                            this,
+                            getString(R.string.folder_selected, it),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.error_selecting_folder, "Folder is not writable"),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.error_selecting_folder, e.message),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(this, getString(R.string.error_selecting_folder, e.message), Toast.LENGTH_LONG).show()
             }
         }
-    }
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                if (settingsViewModel.isShowNotificationEnabled.value) {
+                    startNotificationService()
+                }
+            } else {
+                Toast.makeText(
+                    this,
+                    getString(R.string.notification_permission_denied),
+                    Toast.LENGTH_LONG
+                ).show()
+                settingsViewModel.updateShowNotification(false)
+            }
+        }
 
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        if (isGranted) {
-            if (settingsViewModel.isShowNotificationEnabled.value) {
-                startNotificationService()
+    private val requestOverlayPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Settings.canDrawOverlays(this)) {
+                    // Разрешение получено
+                } else {
+                    // Разрешение не получено
+                    Toast.makeText(this, getString(R.string.overlay_permission_denied), Toast.LENGTH_LONG).show()
+                    settingsViewModel.updateShowOverlockScreenDialog(false)
+                }
             }
-        } else {
-            Toast.makeText(this, getString(R.string.notification_permission_denied), Toast.LENGTH_LONG).show()
-            settingsViewModel.updateShowNotification(false)
         }
-    }
 
     private lateinit var settingsViewModel: SettingsViewModel
 
@@ -76,7 +107,8 @@ class MainActivity : AppCompatActivity() {
                 MainScreen(
                     onSelectFolder = { folderPicker.launch(null) },
                     settingsViewModel = settingsViewModel,
-                    checkNotificationPermission = { checkNotificationPermission() }
+                    checkNotificationPermission = { checkNotificationPermission() },
+                    checkOverlayPermission = { checkOverlayPermission() }
                 )
             }
         }
@@ -89,42 +121,85 @@ class MainActivity : AppCompatActivity() {
                 startNotificationService()
             }
         }
+
+        if (settingsViewModel.isShowOverlockScreenDialog.value) {
+            checkOverlayPermission()
+        }
     }
 
 
     fun startNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
         ContextCompat.startForegroundService(this, serviceIntent)
-        Toast.makeText(this, getString(R.string.notification_service_started), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.notification_service_started), Toast.LENGTH_SHORT)
+            .show()
     }
 
     fun stopNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
         stopService(serviceIntent)
-        Toast.makeText(this, getString(R.string.notification_service_stopped), Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.notification_service_stopped), Toast.LENGTH_SHORT)
+            .show()
     }
 
     private fun checkNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
             startNotificationService()
         } else {
             if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                showPermissionExplanationDialog()
+                showNotificationPermissionExplanationDialog()
             } else {
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
 
-    private fun showPermissionExplanationDialog() {
+    private fun checkOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.SYSTEM_ALERT_WINDOW)) {
+                    showOverlayPermissionExplanationDialog()
+                } else {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                    requestOverlayPermissionLauncher.launch(intent)
+                }
+            }
+        }
+    }
+
+    private fun showNotificationPermissionExplanationDialog() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.notification_permission_needed))
             .setMessage(getString(R.string.notification_permission_explanation))
             .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
             .setNegativeButton(getString(R.string.cancel)) { _, _ ->
                 settingsViewModel.updateShowNotification(false)
+            }
+            .show()
+    }
+
+    private fun showOverlayPermissionExplanationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.overlay_permission_needed))
+            .setMessage(getString(R.string.overlay_permission_explanation))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                requestOverlayPermissionLauncher.launch(intent)
+            }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+                settingsViewModel.updateShowOverlockScreenDialog(false)
             }
             .show()
     }
@@ -135,11 +210,13 @@ class MainActivity : AppCompatActivity() {
 fun MainScreen(
     onSelectFolder: () -> Unit,
     settingsViewModel: SettingsViewModel,
-    checkNotificationPermission: () -> Unit
+    checkNotificationPermission: () -> Unit,
+    checkOverlayPermission: () -> Unit
 ) {
     val context = LocalContext.current
 
     val isShowNotificationEnabled by settingsViewModel.isShowNotificationEnabled.collectAsState()
+    val isShowOverlockScreenDialog by settingsViewModel.isShowOverlockScreenDialog.collectAsState()
     val isDateCreatedEnabled by settingsViewModel.isDateCreatedEnabled.collectAsState()
     val propertyName by settingsViewModel.propertyName.collectAsState()
     val noteTitleTemplate by settingsViewModel.noteTitleTemplate.collectAsState()
@@ -203,6 +280,28 @@ fun MainScreen(
                                         }
                                     } else {
                                         (context as MainActivity).stopNotificationService()
+                                    }
+                                }
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                stringResource(id = R.string.show_overlock_screen_dialog),
+                                color = Color.Black,
+                                modifier = Modifier.weight(1f),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Switch(
+                                checked = isShowOverlockScreenDialog,
+                                onCheckedChange = { isChecked ->
+                                    settingsViewModel.updateShowOverlockScreenDialog(isChecked)
+                                    if (isChecked) {
+                                        checkOverlayPermission()
                                     }
                                 }
                             )

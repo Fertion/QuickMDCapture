@@ -35,4 +35,8 @@
     <string name="notification_permission_needed">Требуется разрешение на уведомления</string>
     <string name="notification_permission_explanation">Этому приложению требуется разрешение на показ уведомлений для быстрого добавления заметок.</string>
     <string name="notification_permission_denied">Разрешение на уведомления отклонено.</string>
+    <string name="show_overlock_screen_dialog">Показывать диалог поверх экрана блокировки</string>
+    <string name="overlay_permission_needed">Требуется разрешение на отображение поверх других приложений</string>
+    <string name="overlay_permission_explanation">Этому приложению требуется разрешение на отображение диалога поверх экрана блокировки для быстрого добавления заметок.</string>
+    <string name="overlay_permission_denied">Разрешение на отображение поверх других приложений отклонено.</string>
 </resources>

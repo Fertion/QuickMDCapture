@@ -14,6 +14,12 @@ class TransparentActivity : AppCompatActivity() {
 
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
+        // Устанавливаем флаг FLAG_SHOW_WHEN_LOCKED до отображения диалога
+        if (settingsViewModel.isShowOverlockScreenDialog.value) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,

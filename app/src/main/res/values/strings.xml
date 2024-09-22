@@ -35,4 +35,8 @@
     <string name="notification_permission_needed">Notification Permission Needed</string>
     <string name="notification_permission_explanation">This app needs permission to show notifications in order to quickly add notes.</string>
     <string name="notification_permission_denied">Notification permission denied.</string>
+    <string name="show_overlock_screen_dialog">Show dialog over lock screen</string>
+    <string name="overlay_permission_needed">Overlay Permission Needed</string>
+    <string name="overlay_permission_explanation">This app needs permission to show dialog over lock screen in order to quickly add notes.</string>
+    <string name="overlay_permission_denied">Overlay permission denied.</string>
 </resources>
