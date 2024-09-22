@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
@@ -92,11 +93,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 // Произошла ошибка при распознавании речи
                 Toast.makeText(context, "Ошибка распознавания речи", Toast.LENGTH_SHORT).show()
                 isListening = false
-                btnSpeech.setImageResource(R.drawable.ic_mic)
+                btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
                 lastPartialTextLength = 0
             }
 
             override fun onResults(results: Bundle?) {
+                // Получены результаты распознавания речи
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (matches != null && matches.isNotEmpty()) {
                     val spokenText = matches[0]
@@ -110,7 +112,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     dismiss()
                 }
 
-                btnSpeech.setImageResource(R.drawable.ic_mic)
+                btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
                 lastPartialTextLength = 0
             }
 
@@ -170,13 +172,13 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         speechRecognizer.startListening(intent)
         isListening = true
-        btnSpeech.setImageResource(R.drawable.ic_mic_off)
+        btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic_on))
     }
 
     private fun stopSpeechRecognition() {
         speechRecognizer.stopListening()
         isListening = false
-        btnSpeech.setImageResource(R.drawable.ic_mic)
+        btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
         lastPartialTextLength = 0
     }
 
