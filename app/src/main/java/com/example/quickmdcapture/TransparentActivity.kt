@@ -1,20 +1,42 @@
 package com.example.quickmdcapture
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 
 class TransparentActivity : AppCompatActivity() {
 
     private lateinit var settingsViewModel: SettingsViewModel
+    private val REQUEST_RECORD_AUDIO_PERMISSION = 200
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                // Разрешение на использование микрофона получено, запускаем распознавание речи
+                dialog.startSpeechRecognition()
+            } else {
+                // Разрешение на использование микрофона не получено
+                Toast.makeText(
+                    this,
+                    "Для использования голосового ввода необходимо разрешить доступ к микрофону",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+    private lateinit var dialog: NoteDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
-        // Устанавливаем флаг FLAG_SHOW_WHEN_LOCKED до отображения диалога
         if (settingsViewModel.isShowOverlockScreenDialog.value) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -32,7 +54,7 @@ class TransparentActivity : AppCompatActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         val isAutoSaveEnabled = settingsViewModel.isAutoSaveEnabled.value
-        val dialog = NoteDialog(this, isAutoSaveEnabled)
+        dialog = NoteDialog(this, isAutoSaveEnabled)
         dialog.setOnDismissListener {
             finish()
             overridePendingTransition(0, 0)
@@ -40,9 +62,19 @@ class TransparentActivity : AppCompatActivity() {
         dialog.show()
 
         if (intent.getBooleanExtra("START_VOICE_INPUT", false)) {
-            dialog.startSpeechRecognition()
+            startSpeechRecognition()
         }
 
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+    }
+
+    fun startSpeechRecognition() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        } else {
+            dialog.startSpeechRecognition()
+        }
     }
 }
