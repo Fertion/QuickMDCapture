@@ -29,6 +29,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     private var isListening = false
     private val etNote by lazy { findViewById<EditText>(R.id.etNote) }
     private val btnSpeech by lazy { findViewById<ImageButton>(R.id.btnSpeech) }
+    private var lastPartialTextLength = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +73,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
             override fun onBeginningOfSpeech() {
                 // Начало распознавания речи
+                lastPartialTextLength = 0
             }
 
             override fun onRmsChanged(rmsdB: Float) {
@@ -91,6 +93,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 Toast.makeText(context, "Ошибка распознавания речи", Toast.LENGTH_SHORT).show()
                 isListening = false
                 btnSpeech.setImageResource(R.drawable.ic_mic)
+                lastPartialTextLength = 0
             }
 
             override fun onResults(results: Bundle?) {
@@ -102,10 +105,17 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 }
                 isListening = false
                 btnSpeech.setImageResource(R.drawable.ic_mic)
+                lastPartialTextLength = 0
             }
 
             override fun onPartialResults(partialResults: Bundle?) {
                 // Получены частичные результаты распознавания речи
+                val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (matches != null && matches.isNotEmpty()) {
+                    val spokenText = matches[0]
+                    updateNoteText(spokenText)
+                    lastPartialTextLength = spokenText.length
+                }
             }
 
             override fun onEvent(eventType: Int, params: Bundle?) {
@@ -126,16 +136,17 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     private fun updateNoteText(text: String) {
         val currentText = etNote.text.toString()
 
-        val newText = if (currentText.isNotEmpty()) {
-            "$currentText $text"
+        val newText = if (currentText.length > lastPartialTextLength) {
+            currentText.substring(0, currentText.length - lastPartialTextLength) + text
         } else {
             text
         }
 
+
         etNote.setText(newText)
         etNote.setSelection(etNote.text.length)
 
-        if (isAutoSaveEnabled) {
+        if (isAutoSaveEnabled && !isListening) {
             saveNote(etNote.text.toString())
             dismiss()
         }
