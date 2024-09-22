@@ -1,15 +1,20 @@
 package com.example.quickmdcapture
 
 import android.app.Dialog
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -57,8 +62,9 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             val note = etNote.text.toString()
             if (note.isNotEmpty()) {
                 saveNote(note)
+            } else {
+                dismissWithMessage(context.getString(R.string.note_error))
             }
-            dismiss()
         }
 
         btnCancel.setOnClickListener {
@@ -91,7 +97,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
             override fun onError(error: Int) {
                 // Произошла ошибка при распознавании речи
-                Toast.makeText(context, "Ошибка распознавания речи", Toast.LENGTH_SHORT).show()
+                dismissWithMessage(context.getString(R.string.note_error))
                 isListening = false
                 btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
                 lastPartialTextLength = 0
@@ -103,14 +109,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 if (matches != null && matches.isNotEmpty()) {
                     val spokenText = matches[0]
                     updateNoteText(spokenText)
+                    if (isAutoSaveEnabled && !isListening) {
+                        saveNote(etNote.text.toString())
+                    }
                 }
 
                 isListening = false
-
-                if (isAutoSaveEnabled && !isListening) {
-                    saveNote(etNote.text.toString())
-                    dismiss()
-                }
 
                 btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
                 lastPartialTextLength = 0
@@ -156,7 +160,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         if (isAutoSaveEnabled && !isListening) {
             saveNote(etNote.text.toString())
-            dismiss()
         }
     }
 
@@ -189,8 +192,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
 
         if (folderUriString == context.getString(R.string.folder_not_selected)) {
-            Toast.makeText(context, context.getString(R.string.folder_not_selected), Toast.LENGTH_SHORT)
-                .show()
+            if (isScreenLocked()) {
+                dismissWithMessage(context.getString(R.string.folder_not_selected))
+            } else {
+                Toast.makeText(context, context.getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
+                dismiss()
+            }
             return
         }
 
@@ -205,8 +212,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
             val documentFile = DocumentFile.fromTreeUri(context, folderUri)
             if (documentFile == null || !documentFile.canWrite()) {
-                Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
-                    .show()
+                if (isScreenLocked()) {
+                    dismissWithMessage(context.getString(R.string.note_error))
+                } else {
+                    Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                    dismiss()
+                }
                 return
             }
 
@@ -215,8 +226,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
                     outputStream.write("\n$note".toByteArray())
                 }
-                Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT)
-                    .show()
+                if (isScreenLocked()) {
+                    dismissWithMessage(context.getString(R.string.note_appended))
+                } else {
+                    Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT).show()
+                    dismiss()
+                }
             } else {
                 val fileDoc = documentFile.createFile("text/markdown", fileName)
                 if (fileDoc != null) {
@@ -228,15 +243,46 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                         }
                         outputStream.write(dataToWrite.toByteArray())
                     }
-                    Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT)
-                        .show()
+                    if (isScreenLocked()) {
+                        dismissWithMessage(context.getString(R.string.note_saved))
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
                 } else {
-                    Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
-                        .show()
+                    if (isScreenLocked()) {
+                        dismissWithMessage(context.getString(R.string.note_error))
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
                 }
             }
         } catch (e: Exception) {
-            Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+            if (isScreenLocked()) {
+                dismissWithMessage(context.getString(R.string.note_error))
+            } else {
+                Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                dismiss()
+            }
+        }
+    }
+
+    private fun dismissWithMessage(message: String) {
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(etNote.windowToken, 0)
+        etNote.setText(message)
+        Handler(Looper.getMainLooper()).postDelayed({
+            dismiss()
+        }, 1000)
+    }
+
+    private fun isScreenLocked(): Boolean {
+        val keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            keyguardManager.isKeyguardLocked
+        } else {
+            keyguardManager.isKeyguardSecure
         }
     }
 }
