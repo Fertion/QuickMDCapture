@@ -97,13 +97,19 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
 
             override fun onResults(results: Bundle?) {
-                // Получены результаты распознавания речи
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (matches != null && matches.isNotEmpty()) {
                     val spokenText = matches[0]
                     updateNoteText(spokenText)
                 }
+
                 isListening = false
+
+                if (isAutoSaveEnabled && !isListening) {
+                    saveNote(etNote.text.toString())
+                    dismiss()
+                }
+
                 btnSpeech.setImageResource(R.drawable.ic_mic)
                 lastPartialTextLength = 0
             }
@@ -171,6 +177,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         speechRecognizer.stopListening()
         isListening = false
         btnSpeech.setImageResource(R.drawable.ic_mic)
+        lastPartialTextLength = 0
     }
 
     private fun saveNote(note: String) {
