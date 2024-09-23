@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -86,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (Settings.canDrawOverlays(this)) {
-                    // Разрешение получено
+                    settingsViewModel.updateShowOverlockScreenDialog(true) // Включаем переключатель после получения разрешения
                 } else {
                     // Разрешение не получено
                     Toast.makeText(this, getString(R.string.overlay_permission_denied), Toast.LENGTH_LONG).show()
@@ -108,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                     onSelectFolder = { folderPicker.launch(null) },
                     settingsViewModel = settingsViewModel,
                     checkNotificationPermission = { checkNotificationPermission() },
-                    checkOverlayPermission = { checkOverlayPermission() }
+                    showOverlayPermissionWarningDialog = { showOverlayPermissionWarningDialog() }
                 )
             }
         }
@@ -203,6 +205,23 @@ class MainActivity : AppCompatActivity() {
             }
             .show()
     }
+
+    private fun showOverlayPermissionWarningDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.warning))
+            .setMessage(getString(R.string.overlay_permission_warning))
+            .setPositiveButton(getString(R.string.im_sure)) { _, _ ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                    settingsViewModel.updateShowOverlockScreenDialog(true)
+                } else {
+                    checkOverlayPermission()
+                }
+            }
+            .setNegativeButton(getString(R.string.no)) { _, _ ->
+                settingsViewModel.updateShowOverlockScreenDialog(false)
+            }
+            .show()
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -211,7 +230,7 @@ fun MainScreen(
     onSelectFolder: () -> Unit,
     settingsViewModel: SettingsViewModel,
     checkNotificationPermission: () -> Unit,
-    checkOverlayPermission: () -> Unit
+    showOverlayPermissionWarningDialog: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -225,6 +244,7 @@ fun MainScreen(
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
+    var showOverlaySettingsInfoDialog by remember { mutableStateOf(false) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
         LazyColumn(
@@ -235,7 +255,7 @@ fun MainScreen(
             verticalArrangement = Arrangement.Top
         ) {
             item {
-                // Методы добавления заметок
+                // Настройки постоянного уведомления
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -295,15 +315,20 @@ fun MainScreen(
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
+                            IconButton(onClick = { showOverlaySettingsInfoDialog = true }) {
+                                Icon(Icons.Filled.Info, contentDescription = "Info")
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
                             Switch(
                                 checked = isShowOverlockScreenDialog,
                                 onCheckedChange = { isChecked ->
-                                    settingsViewModel.updateShowOverlockScreenDialog(isChecked)
                                     if (isChecked) {
-                                        checkOverlayPermission()
+                                        showOverlayPermissionWarningDialog()
+                                    } else {
+                                        settingsViewModel.updateShowOverlockScreenDialog(isChecked)
                                     }
-                                }
+                                },
+                                enabled = isShowNotificationEnabled // Переключатель доступен только если уведомления включены
                             )
                         }
                     }
@@ -484,6 +509,12 @@ fun MainScreen(
     if (showSaveSettingsInfoDialog) {
         ShowInfoDialog(stringResource(id = R.string.save_settings_info)) {
             showSaveSettingsInfoDialog = false
+        }
+    }
+
+    if (showOverlaySettingsInfoDialog) {
+        ShowInfoDialog(stringResource(id = R.string.overlay_permission_info)) {
+            showOverlaySettingsInfoDialog = false
         }
     }
 }
