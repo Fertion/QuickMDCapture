@@ -15,12 +15,14 @@
 
 ---
 
-# Roadmap
+# Planned improvements
 
 - [x] Adding voice input
 - [x] Add notes and files using the "Share" option
 - [x] Add notes using simple widgets
 - [x] Distribute the settings into sections, information buttons with clarifications
+- [x] Add notes without unlocking your device
+- [ ] Styles for permanent notification
 - [ ] Starting note addition via volume buttons, input is possible without unlocking the phone
 - [ ] A widget displaying a list of the last 3-5 added notes; clicking on them opens the selected note via URI in Obsidian
 - [ ] A text input form widget (similar to a regular text form, but fixed on the desktop rather than a pop-up)
