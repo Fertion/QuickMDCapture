@@ -1,6 +1,5 @@
 package com.example.quickmdcapture
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -50,6 +49,9 @@ class ShareHandlerActivity : AppCompatActivity() {
             Intent.ACTION_SEND_MULTIPLE -> {
                 handleActionSendMultiple(intent, type, documentFile)
             }
+            Intent.ACTION_PROCESS_TEXT -> {
+                handleActionProcessText(intent, documentFile)
+            }
             else -> {
                 // Unsupported действие
             }
@@ -94,6 +96,14 @@ class ShareHandlerActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun handleActionProcessText(intent: Intent, folder: DocumentFile) {
+        val sharedText = intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT)
+        if (sharedText != null) {
+            saveTextAsNote(sharedText, folder)
+        }
+    }
+
 
     private fun getSharedUri(intent: Intent): Uri? {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
