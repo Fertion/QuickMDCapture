@@ -64,7 +64,9 @@ fun SettingsScreen(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp) // Добавляем отступ снизу
             ) {
                 Text(
                     stringResource(id = R.string.add_notes_via_notification),
