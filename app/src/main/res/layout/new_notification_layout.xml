@@ -4,18 +4,18 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <Button
+    <ImageView
         android:id="@+id/note_button"
         style="@style/NotificationButton.Left"
-        android:drawableTop="@drawable/baseline_edit_note_24"
-        android:gravity="center"
-        android:paddingTop="8dp" />
+        android:src="@drawable/baseline_edit_note_24"
+        android:scaleType="fitCenter"
+        android:padding="8dp"/>
 
-    <Button
+    <ImageView
         android:id="@+id/voice_input_button"
         style="@style/NotificationButton.Right"
-        android:drawableTop="@drawable/baseline_mic_24"
-        android:gravity="center"
-        android:paddingTop="8dp" />
+        android:src="@drawable/baseline_mic_24"
+        android:scaleType="fitCenter"
+        android:padding="8dp"/>
 
 </LinearLayout>
