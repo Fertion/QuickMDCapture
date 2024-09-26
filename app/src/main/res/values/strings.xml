@@ -44,4 +44,7 @@
     <string name="warning">Warning</string>
     <string name="im_sure">I\'m sure</string>
     <string name="no">No</string>
+    <string name="notification_style">Notification style</string>
+    <string name="notification_style_standard">Standard</string>
+    <string name="notification_style_expanded_with_buttons_1">Expanded with buttons 1</string>
 </resources>

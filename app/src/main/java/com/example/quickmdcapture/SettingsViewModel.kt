@@ -49,6 +49,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val folderUri: StateFlow<String> = _folderUri
 
+    private val _notificationStyle = MutableStateFlow(
+        sharedPreferences.getString("NOTIFICATION_STYLE", "standard") ?: "standard"
+    )
+    val notificationStyle: StateFlow<String> = _notificationStyle
+
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
             _isShowNotificationEnabled.value = isEnabled
@@ -95,6 +100,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _folderUri.value = uri
             sharedPreferences.edit().putString("FOLDER_URI", uri).apply()
+        }
+    }
+
+    fun updateNotificationStyle(style: String) {
+        viewModelScope.launch {
+            _notificationStyle.value = style
+            sharedPreferences.edit().putString("NOTIFICATION_STYLE", style).apply()
         }
     }
 }

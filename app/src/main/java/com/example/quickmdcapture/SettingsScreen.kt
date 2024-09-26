@@ -1,5 +1,6 @@
 package com.example.quickmdcapture
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -33,11 +34,12 @@ fun SettingsScreen(
     val noteTitleTemplate by settingsViewModel.noteTitleTemplate.collectAsState()
     val isAutoSaveEnabled by settingsViewModel.isAutoSaveEnabled.collectAsState()
     val currentFolderUri by settingsViewModel.folderUri.collectAsState()
+    val notificationStyle by settingsViewModel.notificationStyle.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
     var showOverlaySettingsInfoDialog by remember { mutableStateOf(false) }
-
+    var expandedNotificationStyle by remember { mutableStateOf(false) }
 
     // Настройки постоянного уведомления
     Row(
@@ -79,11 +81,65 @@ fun SettingsScreen(
                         if (isChecked) {
                             checkNotificationPermission()
                         } else {
-                            (context as MainActivity).stopNotificationService()
+                            context.stopService(Intent(context, NotificationService::class.java))
                         }
                     }
                 )
             }
+
+            // Выбор стиля уведомления
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(id = R.string.notification_style),
+                    modifier = Modifier.weight(1f),
+                    color = Color.Black
+                )
+                ExposedDropdownMenuBox(
+                    expanded = expandedNotificationStyle,
+                    onExpandedChange = { expandedNotificationStyle = it }
+                ) {
+                    TextField(
+                        value = when (notificationStyle) {
+                            "standard" -> stringResource(id = R.string.notification_style_standard)
+                            "expanded_with_buttons_1" -> stringResource(id = R.string.notification_style_expanded_with_buttons_1)
+                            else -> ""
+                        },
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle) },
+                        modifier = Modifier.menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedNotificationStyle,
+                        onDismissRequest = { expandedNotificationStyle = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.notification_style_standard)) },
+                            onClick = {
+                                settingsViewModel.updateNotificationStyle("standard")
+                                expandedNotificationStyle = false
+                                context.stopService(Intent(context, NotificationService::class.java))
+                                context.startService(Intent(context, NotificationService::class.java))
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.notification_style_expanded_with_buttons_1)) },
+                            onClick = {
+                                settingsViewModel.updateNotificationStyle("expanded_with_buttons_1")
+                                expandedNotificationStyle = false
+                                context.stopService(Intent(context, NotificationService::class.java))
+                                context.startService(Intent(context, NotificationService::class.java))
+                            }
+                        )
+                        // Добавьте здесь пункты меню для других стилей
+                    }
+                }
+            }
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -245,7 +301,6 @@ fun SettingsScreen(
             }
         }
     }
-
     if (showAddNotesMethodsInfoDialog) {
         ShowInfoDialog(stringResource(id = R.string.add_notes_methods_info)) {
             showAddNotesMethodsInfoDialog = false
