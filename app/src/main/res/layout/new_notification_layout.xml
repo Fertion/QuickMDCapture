@@ -8,14 +8,14 @@
         android:id="@+id/note_button"
         style="@style/NotificationButton.Left"
         android:drawableTop="@drawable/baseline_edit_note_24"
-        android:gravity="center_horizontal|top"
+        android:gravity="center"
         android:paddingTop="8dp" />
 
     <Button
         android:id="@+id/voice_input_button"
         style="@style/NotificationButton.Right"
         android:drawableTop="@drawable/baseline_mic_24"
-        android:gravity="center_horizontal|top"
+        android:gravity="center"
         android:paddingTop="8dp" />
 
 </LinearLayout>
