@@ -88,15 +88,13 @@ fun SettingsScreen(
             }
 
             // Выбор стиля уведомления
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(id = R.string.notification_style),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     color = Color.Black
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 ExposedDropdownMenuBox(
                     expanded = expandedNotificationStyle,
                     onExpandedChange = { expandedNotificationStyle = it }
@@ -110,7 +108,9 @@ fun SettingsScreen(
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle) },
-                        modifier = Modifier.menuAnchor()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
                     )
 
                     ExposedDropdownMenu(

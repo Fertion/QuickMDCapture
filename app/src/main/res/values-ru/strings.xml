@@ -44,4 +44,7 @@
     <string name="warning">Предупреждение</string>
     <string name="im_sure">Уверен</string>
     <string name="no">Нет</string>
+    <string name="notification_style">Стиль уведомления</string>
+    <string name="notification_style_standard">Стандартный</string>
+    <string name="notification_style_expanded_with_buttons_1">Расширенный с кнопками 1</string>
 </resources>
