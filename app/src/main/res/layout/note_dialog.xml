@@ -8,7 +8,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <EditText
             android:id="@+id/etNote"
@@ -16,32 +17,32 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/enter_note"
-            android:inputType="textMultiLine"
-            android:minLines="1"
-            android:maxLines="6"
-            android:overScrollMode="always"
-            android:scrollbars="vertical" />
+            android:inputType="textCapSentences|textAutoCorrect|textMultiLine"
+            android:imeOptions="actionDone"
+            android:gravity="top|start" />
 
         <ImageButton
             android:id="@+id/btnSpeech"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:contentDescription="@string/speech_to_text"
-            android:src="@android:drawable/ic_btn_speak_now" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_mic"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/speech_to_text" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="end">
 
         <Button
             android:id="@+id/btnCancel"
             style="@style/DialogButton.Cancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:text="@string/cancel" />
 
@@ -50,8 +51,10 @@
             style="@style/DialogButton.Save"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_weight="1"
+            android:layout_marginStart="8dp"
             android:text="@string/save" />
+
     </LinearLayout>
+
 </LinearLayout>
