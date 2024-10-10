@@ -7,6 +7,10 @@
     height="80">](https://github.com/Fertion/QuickMDCapture/releases/latest)
 ![Downloads](https://img.shields.io/github/downloads/Fertion/QuickMDCapture/total)
 
+[<img src="https://github.com/user-attachments/assets/92977259-9255-4689-8e2a-173309a85b7f"
+    alt="Get it on IzzyOnDroid"
+    height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.example.quickmdcapture)
+
 ### Or use Obtainium
 
 1. Install [Obtainium](https://github.com/ImranR98/Obtainium/blob/main/README.md#installation)
