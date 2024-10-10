@@ -9,8 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class ShareHandlerActivity : AppCompatActivity() {
 
@@ -135,11 +134,12 @@ class ShareHandlerActivity : AppCompatActivity() {
     private fun saveTextAsNote(text: String, folder: DocumentFile) {
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
         val propertyName = settingsViewModel.propertyName.value
-        val noteTitleTemplate = settingsViewModel.noteTitleTemplate.value
+        val noteDateTemplate = settingsViewModel.noteDateTemplate.value
+        val notePrefix = settingsViewModel.notePrefix.value
 
-        val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
+        val timeStamp = SimpleDateFormat(noteDateTemplate, Locale.getDefault()).format(Date())
         val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val fileName = "${timeStamp.replace(":", "_")}.md"
+        val fileName = "${notePrefix}${timeStamp.replace(":", "_")}.md"
 
         val existingFile = folder.findFile(fileName)
         if (existingFile != null) {

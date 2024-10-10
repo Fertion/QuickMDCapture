@@ -31,10 +31,11 @@ fun SettingsScreen(
     val isShowOverlockScreenDialog by settingsViewModel.isShowOverlockScreenDialog.collectAsState()
     val isDateCreatedEnabled by settingsViewModel.isDateCreatedEnabled.collectAsState()
     val propertyName by settingsViewModel.propertyName.collectAsState()
-    val noteTitleTemplate by settingsViewModel.noteTitleTemplate.collectAsState()
+    val noteDateTemplate by settingsViewModel.noteDateTemplate.collectAsState()
     val isAutoSaveEnabled by settingsViewModel.isAutoSaveEnabled.collectAsState()
     val currentFolderUri by settingsViewModel.folderUri.collectAsState()
     val notificationStyle by settingsViewModel.notificationStyle.collectAsState()
+    val notePrefix by settingsViewModel.notePrefix.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -213,11 +214,22 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                value = noteTitleTemplate,
+                value = notePrefix,
                 onValueChange = {
-                    settingsViewModel.updateNoteTitleTemplate(it)
+                    settingsViewModel.updateNotePrefix(it)
                 },
-                label = { Text(stringResource(id = R.string.note_title_template_hint)) },
+                label = { Text(stringResource(id = R.string.note_prefix_hint)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextField(
+                value = noteDateTemplate,
+                onValueChange = {
+                    settingsViewModel.updateNoteDateTemplate(it)
+                },
+                label = { Text(stringResource(id = R.string.note_date_template_hint)) },
                 modifier = Modifier.fillMaxWidth()
             )
         }

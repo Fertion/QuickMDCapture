@@ -29,13 +29,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         MutableStateFlow(sharedPreferences.getString("PROPERTY_NAME", "created") ?: "created")
     val propertyName: StateFlow<String> = _propertyName
 
-    private val _noteTitleTemplate = MutableStateFlow(
+    private val _noteDateTemplate = MutableStateFlow(
         sharedPreferences.getString(
-            "NOTE_TITLE_TEMPLATE",
+            "NOTE_DATE_TEMPLATE",
             "yyyy.MM.dd HH_mm_ss"
         ) ?: "yyyy.MM.dd HH_mm_ss"
     )
-    val noteTitleTemplate: StateFlow<String> = _noteTitleTemplate
+    val noteDateTemplate: StateFlow<String> = _noteDateTemplate
 
     private val _isAutoSaveEnabled =
         MutableStateFlow(sharedPreferences.getBoolean("AUTO_SAVE_ENABLED", false))
@@ -53,6 +53,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         sharedPreferences.getString("NOTIFICATION_STYLE", "standard") ?: "standard"
     )
     val notificationStyle: StateFlow<String> = _notificationStyle
+
+    private val _notePrefix = MutableStateFlow(
+        sharedPreferences.getString("NOTE_PREFIX", "") ?: ""
+    )
+    val notePrefix: StateFlow<String> = _notePrefix
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -82,10 +87,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun updateNoteTitleTemplate(template: String) {
+    fun updateNoteDateTemplate(template: String) {
         viewModelScope.launch {
-            _noteTitleTemplate.value = template
-            sharedPreferences.edit().putString("NOTE_TITLE_TEMPLATE", template).apply()
+            _noteDateTemplate.value = template
+            sharedPreferences.edit().putString("NOTE_DATE_TEMPLATE", template).apply()
         }
     }
 
@@ -107,6 +112,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _notificationStyle.value = style
             sharedPreferences.edit().putString("NOTIFICATION_STYLE", style).apply()
+        }
+    }
+
+    fun updateNotePrefix(prefix: String) {
+        viewModelScope.launch {
+            _notePrefix.value = prefix
+            sharedPreferences.edit().putString("NOTE_PREFIX", prefix).apply()
         }
     }
 }
