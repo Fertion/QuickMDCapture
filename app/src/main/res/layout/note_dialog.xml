@@ -27,7 +27,7 @@
             android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_mic"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/rounded_button_background"
             android:contentDescription="@string/speech_to_text" />
 
     </LinearLayout>
