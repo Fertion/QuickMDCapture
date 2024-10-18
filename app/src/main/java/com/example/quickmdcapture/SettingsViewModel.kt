@@ -54,6 +54,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val notificationStyle: StateFlow<String> = _notificationStyle
 
+    private val _isListItemsEnabled = MutableStateFlow(
+        sharedPreferences.getBoolean("LIST_ITEMS_ENABLED", false)
+    )
+    val isListItemsEnabled: StateFlow<Boolean> = _isListItemsEnabled
+
+
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
             _isShowNotificationEnabled.value = isEnabled
@@ -107,6 +113,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _notificationStyle.value = style
             sharedPreferences.edit().putString("NOTIFICATION_STYLE", style).apply()
+        }
+    }
+
+    fun updateListItemsEnabled(isEnabled: Boolean) {
+        viewModelScope.launch {
+            _isListItemsEnabled.value = isEnabled
+            sharedPreferences.edit().putBoolean("LIST_ITEMS_ENABLED", isEnabled).apply()
         }
     }
 }

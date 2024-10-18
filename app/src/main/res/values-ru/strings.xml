@@ -48,4 +48,6 @@
     <string name="notification_style_standard">Стандартный</string>
     <string name="notification_style_expanded_with_buttons_1">Расширенный с кнопками 1</string>
     <string name="filename_template_hint">Шаблон имени файла (заключите шаблоны форматирования даты и времени в двойные фигурные скобки: {{ }})</string>
+    <string name="save_as_list_items">Сохранять как элементы списка</string>
+
 </resources>

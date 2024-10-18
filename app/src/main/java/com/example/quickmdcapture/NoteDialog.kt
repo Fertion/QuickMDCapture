@@ -186,6 +186,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val propertyName = settingsViewModel.propertyName.value
         val noteDateTemplate = settingsViewModel.noteDateTemplate.value
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
+        val isListItemsEnabled = settingsViewModel.isListItemsEnabled.value
 
 
 
@@ -219,7 +220,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             val existingFile = documentFile.findFile(fileName)
             if (existingFile != null) {
                 contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
-                    outputStream.write("\n$note".toByteArray())
+                    val textToWrite = if (isListItemsEnabled) {
+                        note.split("\n").joinToString("\n") { "- $it" }
+                    } else {
+                        note
+                    }
+                    outputStream.write("\n$textToWrite".toByteArray())
                 }
                 if (isScreenLocked()) {
                     dismissWithMessage(context.getString(R.string.note_appended))
@@ -234,9 +240,18 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                         val dataToWrite = if (isDateCreatedEnabled) {
                             val fullTimeStamp =
                                 SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
-                            "---\n$propertyName: ${fullTimeStamp}\n---\n$note"
+                            val textToWrite = if (isListItemsEnabled) {
+                                note.split("\n").joinToString("\n") { "- $it" }
+                            } else {
+                                note
+                            }
+                            "---\n$propertyName: ${fullTimeStamp}\n---\n$textToWrite"
                         } else {
-                            note
+                            if (isListItemsEnabled) {
+                                note.split("\n").joinToString("\n") { "- $it" }
+                            } else {
+                                note
+                            }
                         }
                         outputStream.write(dataToWrite.toByteArray())
                     }

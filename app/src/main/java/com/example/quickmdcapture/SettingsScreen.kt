@@ -35,6 +35,7 @@ fun SettingsScreen(
     val isAutoSaveEnabled by settingsViewModel.isAutoSaveEnabled.collectAsState()
     val currentFolderUri by settingsViewModel.folderUri.collectAsState()
     val notificationStyle by settingsViewModel.notificationStyle.collectAsState()
+    val isListItemsEnabled by settingsViewModel.isListItemsEnabled.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -215,6 +216,26 @@ fun SettingsScreen(
                 label = { Text(stringResource(id = R.string.filename_template_hint)) },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(id = R.string.save_as_list_items),
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = isListItemsEnabled,
+                    onCheckedChange = {
+                        settingsViewModel.updateListItemsEnabled(it)
+                    }
+                )
+            }
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
