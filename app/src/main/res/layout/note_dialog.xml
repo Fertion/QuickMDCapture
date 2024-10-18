@@ -40,20 +40,34 @@
 
         <Button
             android:id="@+id/btnCancel"
-            style="@style/DialogButton.Cancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/cancel" />
+            android:text="@string/cancel"
+            android:drawableLeft="@drawable/ic_cancel"
+            android:drawableTint="@color/red"
+            android:drawablePadding="8dp"
+            android:textColor="@color/red"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@drawable/rounded_button_background_red" />
 
         <Button
             android:id="@+id/btnSave"
-            style="@style/DialogButton.Save"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="@string/save" />
+            android:text="@string/save"
+            android:drawableLeft="@drawable/ic_save"
+            android:drawableTint="@color/green"
+            android:drawablePadding="8dp"
+            android:textColor="@color/green"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="@drawable/rounded_button_background_green" />
 
     </LinearLayout>
 </LinearLayout>
