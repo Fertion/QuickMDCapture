@@ -35,14 +35,12 @@ fun SettingsScreen(
     val isAutoSaveEnabled by settingsViewModel.isAutoSaveEnabled.collectAsState()
     val currentFolderUri by settingsViewModel.folderUri.collectAsState()
     val notificationStyle by settingsViewModel.notificationStyle.collectAsState()
-    val notePrefix by settingsViewModel.notePrefix.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
     var showOverlaySettingsInfoDialog by remember { mutableStateOf(false) }
     var expandedNotificationStyle by remember { mutableStateOf(false) }
 
-    // Настройки постоянного уведомления
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -67,7 +65,7 @@ fun SettingsScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp) // Добавляем отступ снизу
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     stringResource(id = R.string.add_notes_via_notification),
@@ -90,7 +88,6 @@ fun SettingsScreen(
                 )
             }
 
-            // Выбор стиля уведомления
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = stringResource(id = R.string.notification_style),
@@ -138,11 +135,9 @@ fun SettingsScreen(
                                 context.startService(Intent(context, NotificationService::class.java))
                             }
                         )
-                        // Добавьте здесь пункты меню для других стилей
                     }
                 }
             }
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -167,12 +162,11 @@ fun SettingsScreen(
                             settingsViewModel.updateShowOverlockScreenDialog(isChecked)
                         }
                     },
-                    enabled = isShowNotificationEnabled // Переключатель доступен только если уведомления включены
+                    enabled = isShowNotificationEnabled
                 )
             }
         }
     }
-    // Куда и как сохранять
     Spacer(modifier = Modifier.height(16.dp))
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -214,27 +208,15 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                value = notePrefix,
-                onValueChange = {
-                    settingsViewModel.updateNotePrefix(it)
-                },
-                label = { Text(stringResource(id = R.string.note_prefix_hint)) },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            TextField(
                 value = noteDateTemplate,
                 onValueChange = {
                     settingsViewModel.updateNoteDateTemplate(it)
                 },
-                label = { Text(stringResource(id = R.string.note_date_template_hint)) },
+                label = { Text(stringResource(id = R.string.filename_template_hint)) },
                 modifier = Modifier.fillMaxWidth()
             )
         }
     }
-    // Настройки YAML
     Spacer(modifier = Modifier.height(16.dp))
     Text(
         text = stringResource(id = R.string.yaml_settings_title),
@@ -280,7 +262,6 @@ fun SettingsScreen(
             )
         }
     }
-    // Настройки ввода
     Spacer(modifier = Modifier.height(16.dp))
     Text(
         text = stringResource(id = R.string.input_settings_title),

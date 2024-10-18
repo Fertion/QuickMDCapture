@@ -32,8 +32,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _noteDateTemplate = MutableStateFlow(
         sharedPreferences.getString(
             "NOTE_DATE_TEMPLATE",
-            "yyyy.MM.dd HH_mm_ss"
-        ) ?: "yyyy.MM.dd HH_mm_ss"
+            "{{yyyy.MM.dd HH_mm_ss}}"
+        ) ?: "{{yyyy.MM.dd HH_mm_ss}}"
     )
     val noteDateTemplate: StateFlow<String> = _noteDateTemplate
 
@@ -53,11 +53,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         sharedPreferences.getString("NOTIFICATION_STYLE", "standard") ?: "standard"
     )
     val notificationStyle: StateFlow<String> = _notificationStyle
-
-    private val _notePrefix = MutableStateFlow(
-        sharedPreferences.getString("NOTE_PREFIX", "") ?: ""
-    )
-    val notePrefix: StateFlow<String> = _notePrefix
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -112,13 +107,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _notificationStyle.value = style
             sharedPreferences.edit().putString("NOTIFICATION_STYLE", style).apply()
-        }
-    }
-
-    fun updateNotePrefix(prefix: String) {
-        viewModelScope.launch {
-            _notePrefix.value = prefix
-            sharedPreferences.edit().putString("NOTE_PREFIX", prefix).apply()
         }
     }
 }

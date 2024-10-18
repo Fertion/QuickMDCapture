@@ -26,7 +26,7 @@
     <string name="yaml_settings_title">YAML settings</string>
     <string name="input_settings_title">Input settings</string>
     <string name="add_notes_methods_info">You can also add notes via the \"Share\" menu and widgets.</string>
-    <string name="save_settings_info">If a file with the same name already exists, the information will be appended to the end of the existing file.\n\nFor example, you can use the following characters to build the date and time template:\n\nyyyy - year\nMM - month\ndd - day\nHH - hour\nmm - minute\nss - second\n\nFor example, the template \"yyyy.MM.dd HH_mm_ss\" will create file names like \"2023.04.26 15_30_00.md\"</string>
+    <string name="save_settings_info">If a file with the same name already exists, the information will be appended to the end of the existing file.\n\nFor example, you can use the following characters to build the date and time template:\n\nyyyy - year\nMM - month\ndd - day\nHH - hour\nmm - minute\nss - second\n\nFor example, the template \"{{yyyy.MM.dd HH_mm_ss}}\" will create file names like \"2023.04.26 15_30_00.md\"</string>
     <string name="info_dialog_title">Info</string>
     <string name="ok">OK</string>
     <string name="source_code_title">Source code</string>
@@ -47,5 +47,5 @@
     <string name="notification_style">Notification style</string>
     <string name="notification_style_standard">Standard</string>
     <string name="notification_style_expanded_with_buttons_1">Expanded with buttons 1</string>
-    <string name="note_prefix_hint">Note prefix</string>
+    <string name="filename_template_hint">Filename template (put date and time formatting patterns inside double curly braces: {{ }})</string>
 </resources>

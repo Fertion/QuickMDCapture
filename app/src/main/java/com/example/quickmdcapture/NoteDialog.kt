@@ -75,28 +75,26 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
-                // Готов к распознаванию речи
+
             }
 
             override fun onBeginningOfSpeech() {
-                // Начало распознавания речи
                 lastPartialTextLength = 0
             }
 
             override fun onRmsChanged(rmsdB: Float) {
-                // Изменение уровня громкости звука
+
             }
 
             override fun onBufferReceived(buffer: ByteArray?) {
-                // Получен буфер аудиоданных
+
             }
 
             override fun onEndOfSpeech() {
-                // Конец распознавания речи
+
             }
 
             override fun onError(error: Int) {
-                // Произошла ошибка при распознавании речи
                 dismissWithMessage(context.getString(R.string.note_error))
                 isListening = false
                 btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
@@ -104,7 +102,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
 
             override fun onResults(results: Bundle?) {
-                // Получены результаты распознавания речи
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (matches != null && matches.isNotEmpty()) {
                     val spokenText = matches[0]
@@ -121,7 +118,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
 
             override fun onPartialResults(partialResults: Bundle?) {
-                // Получены частичные результаты распознавания речи
                 val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (matches != null && matches.isNotEmpty()) {
                     val spokenText = matches[0]
@@ -131,7 +127,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
 
             override fun onEvent(eventType: Int, params: Bundle?) {
-                // Произошло событие
+
             }
         })
 
@@ -190,7 +186,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val propertyName = settingsViewModel.propertyName.value
         val noteDateTemplate = settingsViewModel.noteDateTemplate.value
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
-        val notePrefix = settingsViewModel.notePrefix.value
+
 
 
         if (folderUriString == context.getString(R.string.folder_not_selected)) {
@@ -207,10 +203,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             val folderUri = Uri.parse(folderUriString)
             val contentResolver = context.contentResolver
 
-            val timeStamp = SimpleDateFormat(noteDateTemplate, Locale.getDefault()).format(Date())
-            val fullTimeStamp =
-                SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
-            val fileName = "${notePrefix}${timeStamp.replace(":", "_")}.md"
+            val fileName = getFileNameWithDate(noteDateTemplate)
 
             val documentFile = DocumentFile.fromTreeUri(context, folderUri)
             if (documentFile == null || !documentFile.canWrite()) {
@@ -239,6 +232,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 if (fileDoc != null) {
                     contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
                         val dataToWrite = if (isDateCreatedEnabled) {
+                            val fullTimeStamp =
+                                SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
                             "---\n$propertyName: ${fullTimeStamp}\n---\n$note"
                         } else {
                             note
@@ -286,5 +281,25 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         } else {
             keyguardManager.isKeyguardSecure
         }
+    }
+
+    private fun getFileNameWithDate(template: String): String {
+        var result = template
+
+        var startIndex = result.indexOf("{{")
+        while (startIndex != -1) {
+            val endIndex = result.indexOf("}}", startIndex + 2)
+            if (endIndex != -1) {
+                val datePart = result.substring(startIndex + 2, endIndex)
+                val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
+                result = result.replaceRange(startIndex, endIndex + 2, formattedDate)
+                startIndex = result.indexOf("{{", endIndex)
+            } else {
+                startIndex = -1
+            }
+        }
+
+
+        return "${result.replace(":", "_")}.md"
     }
 }

@@ -135,11 +135,9 @@ class ShareHandlerActivity : AppCompatActivity() {
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
         val propertyName = settingsViewModel.propertyName.value
         val noteDateTemplate = settingsViewModel.noteDateTemplate.value
-        val notePrefix = settingsViewModel.notePrefix.value
 
-        val timeStamp = SimpleDateFormat(noteDateTemplate, Locale.getDefault()).format(Date())
-        val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val fileName = "${notePrefix}${timeStamp.replace(":", "_")}.md"
+
+        val fileName = getFileNameWithDate(noteDateTemplate)
 
         val existingFile = folder.findFile(fileName)
         if (existingFile != null) {
@@ -152,6 +150,7 @@ class ShareHandlerActivity : AppCompatActivity() {
             if (newFile != null) {
                 contentResolver.openOutputStream(newFile.uri)?.use { outputStream ->
                     val dataToWrite = if (isDateCreatedEnabled) {
+                        val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
                         "---\n$propertyName: ${fullTimeStamp}\n---\n$text"
                     } else {
                         text
@@ -165,7 +164,7 @@ class ShareHandlerActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveFile(sourceUri: Uri, folder: DocumentFile) {
+    private fun saveFile(       sourceUri: Uri, folder: DocumentFile) {
         val sourceDocument = DocumentFile.fromSingleUri(this, sourceUri) ?: return
         val fileName = sourceDocument.name ?: "shared_file_${System.currentTimeMillis()}"
         val destinationFile = folder.createFile(sourceDocument.type ?: "application/octet-stream", fileName)
@@ -183,5 +182,25 @@ class ShareHandlerActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, getString(R.string.note_error), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun getFileNameWithDate(template: String): String {
+        var result = template
+
+        var startIndex = result.indexOf("{{")
+        while (startIndex != -1) {
+            val endIndex = result.indexOf("}}", startIndex + 2)
+            if (endIndex != -1) {
+                val datePart = result.substring(startIndex + 2, endIndex)
+                val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
+                result = result.replaceRange(startIndex, endIndex + 2, formattedDate)
+                startIndex = result.indexOf("{{", endIndex)
+            } else {
+                startIndex = -1
+            }
+        }
+
+
+        return "${result.replace(":", "_")}.md"
     }
 }
