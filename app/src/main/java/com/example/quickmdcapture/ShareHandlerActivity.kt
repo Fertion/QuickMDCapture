@@ -136,7 +136,8 @@ class ShareHandlerActivity : AppCompatActivity() {
         val propertyName = settingsViewModel.propertyName.value
         val noteDateTemplate = settingsViewModel.noteDateTemplate.value
         val isListItemsEnabled = settingsViewModel.isListItemsEnabled.value
-
+        val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
+        val timestampTemplate = settingsViewModel.timestampTemplate.value
 
         val timeStamp = SimpleDateFormat(noteDateTemplate, Locale.getDefault()).format(Date())
         val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
@@ -145,10 +146,12 @@ class ShareHandlerActivity : AppCompatActivity() {
         val existingFile = folder.findFile(fileName)
         if (existingFile != null) {
             contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
-                val textToWrite = if (isListItemsEnabled) {
-                    text.split("\n").joinToString("\n") { "- $it" }
-                } else {
-                    text
+                var textToWrite = text
+                if (isListItemsEnabled) {
+                    textToWrite = textToWrite.split("\n").joinToString("\n") { "- $it" }
+                }
+                if (isTimestampEnabled) {
+                    textToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$textToWrite"
                 }
                 outputStream.write("\n$textToWrite".toByteArray())
             }
@@ -157,19 +160,15 @@ class ShareHandlerActivity : AppCompatActivity() {
             val newFile = folder.createFile("text/markdown", fileName)
             if (newFile != null) {
                 contentResolver.openOutputStream(newFile.uri)?.use { outputStream ->
-                    val dataToWrite = if (isDateCreatedEnabled) {
-                        val textToWrite = if (isListItemsEnabled) {
-                            text.split("\n").joinToString("\n") { "- $it" }
-                        } else {
-                            text
-                        }
-                        "---\n$propertyName: ${fullTimeStamp}\n---\n$textToWrite"
-                    } else {
-                        if (isListItemsEnabled) {
-                            text.split("\n").joinToString("\n") { "- $it" }
-                        } else {
-                            text
-                        }
+                    var dataToWrite = text
+                    if (isListItemsEnabled) {
+                        dataToWrite = dataToWrite.split("\n").joinToString("\n") { "- $it" }
+                    }
+                    if (isTimestampEnabled) {
+                        dataToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$dataToWrite"
+                    }
+                    if (isDateCreatedEnabled) {
+                        dataToWrite = "---\n$propertyName: ${fullTimeStamp}\n---\n$dataToWrite"
                     }
                     outputStream.write(dataToWrite.toByteArray())
                 }
@@ -198,5 +197,24 @@ class ShareHandlerActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, getString(R.string.note_error), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun getFormattedTimestamp(template: String): String {
+        var result = template
+
+        var startIndex = result.indexOf("{{")
+        while (startIndex != -1) {
+            val endIndex = result.indexOf("}}", startIndex + 2)
+            if (endIndex != -1) {
+                val datePart = result.substring(startIndex + 2, endIndex)
+                val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
+                result = result.replaceRange(startIndex, endIndex + 2, formattedDate)
+                startIndex = result.indexOf("{{", endIndex)
+            } else {
+                startIndex = -1
+            }
+        }
+
+        return result.replace(":", "_")
     }
 }

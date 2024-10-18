@@ -36,6 +36,8 @@ fun SettingsScreen(
     val currentFolderUri by settingsViewModel.folderUri.collectAsState()
     val notificationStyle by settingsViewModel.notificationStyle.collectAsState()
     val isListItemsEnabled by settingsViewModel.isListItemsEnabled.collectAsState()
+    val isTimestampEnabled by settingsViewModel.isTimestampEnabled.collectAsState()
+    val timestampTemplate by settingsViewModel.timestampTemplate.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -236,6 +238,36 @@ fun SettingsScreen(
                     }
                 )
             }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(id = R.string.add_timestamp),
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = isTimestampEnabled,
+                    onCheckedChange = {
+                        settingsViewModel.updateTimestampEnabled(it)
+                    }
+                )
+            }
+
+            TextField(
+                value = timestampTemplate,
+                onValueChange = {
+                    settingsViewModel.updateTimestampTemplate(it)
+                },
+                label = { Text(stringResource(id = R.string.timestamp_template_hint)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = isTimestampEnabled
+            )
         }
     }
     Spacer(modifier = Modifier.height(16.dp))

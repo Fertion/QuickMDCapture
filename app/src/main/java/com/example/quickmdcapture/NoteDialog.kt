@@ -187,7 +187,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val noteDateTemplate = settingsViewModel.noteDateTemplate.value
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
         val isListItemsEnabled = settingsViewModel.isListItemsEnabled.value
-
+        val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
+        val timestampTemplate = settingsViewModel.timestampTemplate.value
 
 
         if (folderUriString == context.getString(R.string.folder_not_selected)) {
@@ -220,10 +221,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             val existingFile = documentFile.findFile(fileName)
             if (existingFile != null) {
                 contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
-                    val textToWrite = if (isListItemsEnabled) {
-                        note.split("\n").joinToString("\n") { "- $it" }
-                    } else {
-                        note
+                    var textToWrite = note
+                    if (isListItemsEnabled) {
+                        textToWrite = textToWrite.split("\n").joinToString("\n") { "- $it" }
+                    }
+                    if (isTimestampEnabled) {
+                        textToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$textToWrite"
                     }
                     outputStream.write("\n$textToWrite".toByteArray())
                 }
@@ -237,21 +240,17 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 val fileDoc = documentFile.createFile("text/markdown", fileName)
                 if (fileDoc != null) {
                     contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
-                        val dataToWrite = if (isDateCreatedEnabled) {
+                        var dataToWrite = note
+                        if (isListItemsEnabled) {
+                            dataToWrite = dataToWrite.split("\n").joinToString("\n") { "- $it" }
+                        }
+                        if (isTimestampEnabled) {
+                            dataToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$dataToWrite"
+                        }
+                        if (isDateCreatedEnabled) {
                             val fullTimeStamp =
                                 SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
-                            val textToWrite = if (isListItemsEnabled) {
-                                note.split("\n").joinToString("\n") { "- $it" }
-                            } else {
-                                note
-                            }
-                            "---\n$propertyName: ${fullTimeStamp}\n---\n$textToWrite"
-                        } else {
-                            if (isListItemsEnabled) {
-                                note.split("\n").joinToString("\n") { "- $it" }
-                            } else {
-                                note
-                            }
+                            dataToWrite = "---\n$propertyName: ${fullTimeStamp}\n---\n$dataToWrite"
                         }
                         outputStream.write(dataToWrite.toByteArray())
                     }
@@ -316,5 +315,24 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
 
         return "${result.replace(":", "_")}.md"
+    }
+
+    private fun getFormattedTimestamp(template: String): String {
+        var result = template
+
+        var startIndex = result.indexOf("{{")
+        while (startIndex != -1) {
+            val endIndex = result.indexOf("}}", startIndex + 2)
+            if (endIndex != -1) {
+                val datePart = result.substring(startIndex + 2, endIndex)
+                val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
+                result = result.replaceRange(startIndex, endIndex + 2, formattedDate)
+                startIndex = result.indexOf("{{", endIndex)
+            } else {
+                startIndex = -1
+            }
+        }
+
+        return result.replace(":", "_")
     }
 }

@@ -49,5 +49,6 @@
     <string name="notification_style_expanded_with_buttons_1">Expanded with buttons 1</string>
     <string name="filename_template_hint">Filename template (put date and time formatting patterns inside double curly braces: {{ }})</string>
     <string name="save_as_list_items">Save as list items</string>
-
+    <string name="add_timestamp">Add timestamp before text</string>
+    <string name="timestamp_template_hint">Timestamp template (put date and time formatting patterns inside double curly braces: {{ }})</string>
 </resources>

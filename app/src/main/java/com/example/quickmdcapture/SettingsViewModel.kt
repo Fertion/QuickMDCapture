@@ -59,6 +59,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val isListItemsEnabled: StateFlow<Boolean> = _isListItemsEnabled
 
+    private val _isTimestampEnabled = MutableStateFlow(
+        sharedPreferences.getBoolean("TIMESTAMP_ENABLED", false)
+    )
+    val isTimestampEnabled: StateFlow<Boolean> = _isTimestampEnabled
+
+    private val _timestampTemplate = MutableStateFlow(
+        sharedPreferences.getString(
+            "TIMESTAMP_TEMPLATE",
+            "# {{yyyy.MM.dd HH:mm:ss}}"
+        ) ?: "# {{yyyy.MM.dd HH:mm:ss}}"
+    )
+    val timestampTemplate: StateFlow<String> = _timestampTemplate
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -120,6 +132,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _isListItemsEnabled.value = isEnabled
             sharedPreferences.edit().putBoolean("LIST_ITEMS_ENABLED", isEnabled).apply()
+        }
+    }
+
+    fun updateTimestampEnabled(isEnabled: Boolean) {
+        viewModelScope.launch {
+            _isTimestampEnabled.value = isEnabled
+            sharedPreferences.edit().putBoolean("TIMESTAMP_ENABLED", isEnabled).apply()
+        }
+    }
+
+    fun updateTimestampTemplate(template: String) {
+        viewModelScope.launch {
+            _timestampTemplate.value = template
+            sharedPreferences.edit().putString("TIMESTAMP_TEMPLATE", template).apply()
         }
     }
 }
