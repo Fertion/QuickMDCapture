@@ -46,11 +46,11 @@
             android:text="@string/cancel"
             android:drawableLeft="@drawable/ic_cancel"
             android:drawableTint="@color/red"
-            android:drawablePadding="8dp"
             android:textColor="@color/red"
             android:paddingStart="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
+            android:gravity="center"
             android:background="@drawable/rounded_button_background_red" />
 
         <Button
@@ -62,11 +62,11 @@
             android:text="@string/save"
             android:drawableLeft="@drawable/ic_save"
             android:drawableTint="@color/green"
-            android:drawablePadding="8dp"
             android:textColor="@color/green"
             android:paddingStart="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
+            android:gravity="center"
             android:background="@drawable/rounded_button_background_green" />
 
     </LinearLayout>
