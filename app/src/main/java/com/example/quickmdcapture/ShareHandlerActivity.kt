@@ -139,7 +139,8 @@ class ShareHandlerActivity : AppCompatActivity() {
         val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
         val timestampTemplate = settingsViewModel.timestampTemplate.value
 
-        val timeStamp = SimpleDateFormat(noteDateTemplate, Locale.getDefault()).format(Date())
+        val dateTemplateWithoutBrackets = noteDateTemplate.replace("{{", "").replace("}}", "")
+        val timeStamp = SimpleDateFormat(dateTemplateWithoutBrackets, Locale.getDefault()).format(Date())
         val fullTimeStamp = SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
         val fileName = "${timeStamp.replace(":", "_")}.md"
 
