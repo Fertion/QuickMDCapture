@@ -36,6 +36,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     private val etNote by lazy { findViewById<EditText>(R.id.etNote) }
     private val btnSpeech by lazy { findViewById<ImageButton>(R.id.btnSpeech) }
     private var lastPartialTextLength = 0
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,7 +112,9 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     val spokenText = matches[0]
                     updateNoteText(spokenText)
                     if (isAutoSaveEnabled) {
-                        saveNote(etNote.text.toString())
+                        handler.postDelayed({
+                            saveNote(etNote.text.toString())
+                        }, 1000)
                     }
                 }
 
@@ -276,7 +279,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(etNote.windowToken, 0)
         etNote.setText(message)
-        Handler(Looper.getMainLooper()).postDelayed({
+        handler.postDelayed({
             dismiss()
         }, 1000)
     }
