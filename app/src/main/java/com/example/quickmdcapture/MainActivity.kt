@@ -236,24 +236,28 @@ fun MainScreen(
     var latestRelease by remember { mutableStateOf<Release?>(null) }
     var currentVersion by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        val versionedPackage = VersionedPackage(context.packageName, 0)
-        val packageInfoFlags = PackageManager.PackageInfoFlags.of(0L)
-        currentVersion = context.packageManager.getPackageInfo(versionedPackage, packageInfoFlags).versionName
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.github.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val gitHubDataService = retrofit.create(GitHubDataService::class.java)
-
+    fun checkLatestRelease() {
         coroutineScope.launch {
+            val versionedPackage = VersionedPackage(context.packageName, 0)
+            val packageInfoFlags = PackageManager.PackageInfoFlags.of(0L)
+            currentVersion = context.packageManager.getPackageInfo(versionedPackage, packageInfoFlags).versionName
+
+            val retrofit = Retrofit.Builder()
+                .baseUrl("https://api.github.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+
+            val gitHubDataService = retrofit.create(GitHubDataService::class.java)
             val response = gitHubDataService.getLatestRelease()
             if (response.isSuccessful) {
                 latestRelease = response.body()
             }
         }
+    }
+
+    // Вызываем функцию при каждом появлении MainScreen
+    LaunchedEffect(Unit) {
+        checkLatestRelease()
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
