@@ -51,4 +51,6 @@
     <string name="save_as_list_items">Save as list items</string>
     <string name="add_timestamp">Add timestamp before text</string>
     <string name="timestamp_template_hint">Timestamp template (put date and time formatting patterns inside double curly braces: {{ }})</string>
+    <string name="microphone_permission_denied">To use voice input, you need to allow access to the microphone</string>
+
 </resources>

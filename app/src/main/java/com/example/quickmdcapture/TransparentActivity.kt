@@ -24,7 +24,7 @@ class TransparentActivity : AppCompatActivity() {
                 // Разрешение на использование микрофона не получено
                 Toast.makeText(
                     this,
-                    "Для использования голосового ввода необходимо разрешить доступ к микрофону",
+                    getString(R.string.microphone_permission_denied),
                     Toast.LENGTH_SHORT
                 ).show()
             }
