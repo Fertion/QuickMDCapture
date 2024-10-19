@@ -80,6 +80,10 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
             override fun onBeginningOfSpeech() {
                 lastPartialTextLength = 0
+                val currentText = etNote.text.toString()
+                if (currentText.isNotEmpty() && currentText.last() != ' ') {
+                    etNote.append(" ")
+                }
             }
 
             override fun onRmsChanged(rmsdB: Float) {
@@ -106,7 +110,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 if (matches != null && matches.isNotEmpty()) {
                     val spokenText = matches[0]
                     updateNoteText(spokenText)
-                    if (isAutoSaveEnabled && !isListening) {
+                    if (isAutoSaveEnabled) {
                         saveNote(etNote.text.toString())
                     }
                 }
@@ -143,20 +147,9 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
     private fun updateNoteText(text: String) {
         val currentText = etNote.text.toString()
-
-        val newText = if (currentText.length > lastPartialTextLength) {
-            currentText.substring(0, currentText.length - lastPartialTextLength) + text
-        } else {
-            text
-        }
-
-
+        val newText = currentText.substring(0, currentText.length - lastPartialTextLength) + text
         etNote.setText(newText)
         etNote.setSelection(etNote.text.length)
-
-        if (isAutoSaveEnabled && !isListening) {
-            saveNote(etNote.text.toString())
-        }
     }
 
 
