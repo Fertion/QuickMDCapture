@@ -29,7 +29,7 @@
     <string name="save_settings_info">If a file with the same name already exists, the information will be appended to the end of the existing file.\n\nFor example, you can use the following characters to build the date and time template:\n\nyyyy - year\nMM - month\ndd - day\nHH - hour\nmm - minute\nss - second\n\nFor example, the template \"{{yyyy.MM.dd HH_mm_ss}}\" will create file names like \"2023.04.26 15_30_00.md\"</string>
     <string name="info_dialog_title">Info</string>
     <string name="ok">OK</string>
-    <string name="source_code_title">Source code</string>
+    <string name="source_code_title">Information</string>
     <string name="github_link">GitHub repository</string>
     <string name="telegram_link">Telegram channel</string>
     <string name="notification_permission_needed">Notification Permission Needed</string>
@@ -52,5 +52,6 @@
     <string name="add_timestamp">Add timestamp before text</string>
     <string name="timestamp_template_hint">Timestamp template (put date and time formatting patterns inside double curly braces: {{ }})</string>
     <string name="microphone_permission_denied">To use voice input, you need to allow access to the microphone</string>
-
+    <string name="current_version">Current version: %1$s</string>
+    <string name="latest_version">Latest version on GitHub: %1$s</string>
 </resources>

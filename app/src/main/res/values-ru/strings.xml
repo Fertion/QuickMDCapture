@@ -29,7 +29,7 @@
     <string name="save_settings_info">Если файл с таким именем уже существует, информация будет добавлена в конец существующего файла.\n\nК примеру, вы можете использовать следующие символы для создания шаблона даты и времени:\n\nyyyy - год\nMM - месяц\ndd - день\nHH - час\nmm - минута\nss - секунда\n\nНапример, шаблон \"{{yyyy.MM.dd HH_mm_ss}}\" создаст имена файлов, подобные \"2023.04.26 15_30_00.md\".</string>
     <string name="info_dialog_title">Инфо</string>
     <string name="ok">Ок</string>
-    <string name="source_code_title">Ссылки</string>
+    <string name="source_code_title">Информация</string>
     <string name="github_link">Репозиторий GitHub</string>
     <string name="telegram_link">Telegram канал</string>
     <string name="notification_permission_needed">Требуется разрешение на уведомления</string>
@@ -52,4 +52,6 @@
     <string name="add_timestamp">Добавлять временную метку перед текстом</string>
     <string name="timestamp_template_hint">Шаблон временной метки (заключите шаблоны форматирования даты и времени в двойные фигурные скобки: {{ }})</string>
     <string name="microphone_permission_denied">Для использования голосового ввода необходимо разрешить доступ к микрофону</string>
+    <string name="current_version">Текущая версия: %1$s</string>
+    <string name="latest_version">Последняя версия на GitHub: %1$s</string>
 </resources>

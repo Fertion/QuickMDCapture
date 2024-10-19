@@ -3,6 +3,8 @@ package com.example.quickmdcapture
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.VersionedPackage
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
 
 
 class MainActivity : AppCompatActivity() {
@@ -226,6 +232,30 @@ fun MainScreen(
     showOverlayPermissionWarningDialog: () -> Unit
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var latestRelease by remember { mutableStateOf<Release?>(null) }
+    var currentVersion by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        val versionedPackage = VersionedPackage(context.packageName, 0)
+        val packageInfoFlags = PackageManager.PackageInfoFlags.of(0L)
+        currentVersion = context.packageManager.getPackageInfo(versionedPackage, packageInfoFlags).versionName
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.github.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val gitHubDataService = retrofit.create(GitHubDataService::class.java)
+
+        coroutineScope.launch {
+            val response = gitHubDataService.getLatestRelease()
+            if (response.isSuccessful) {
+                latestRelease = response.body()
+            }
+        }
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
         LazyColumn(
             modifier = Modifier
@@ -259,6 +289,9 @@ fun MainScreen(
                         .padding(top = 8.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"))
+                        Text(stringResource(id = R.string.latest_version, latestRelease?.tag_name ?: "Unknown"))
+                        Spacer(modifier = Modifier.height(8.dp))
                         ClickableText(
                             text = stringResource(id = R.string.github_link),
                             onClick = {
@@ -292,3 +325,17 @@ fun openLink(context: Context, url: String) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     context.startActivity(intent)
 }
+
+interface GitHubDataService {
+    @GET("repos/Fertion/QuickMDCapture/releases/latest")
+    suspend fun getLatestRelease(): retrofit2.Response<Release>
+}
+
+data class Release(
+    val tag_name: String,
+    val assets: List<Asset>
+)
+
+data class Asset(
+    val name: String
+)
