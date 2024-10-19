@@ -54,6 +54,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val notificationStyle: StateFlow<String> = _notificationStyle
 
+    private val _customDateFormat = MutableStateFlow(
+        sharedPreferences.getString("CUSTOM_DATE_FORMAT", "yyyy.MM.dd HH:mm:ss") ?: "yyyy.MM.dd HH:mm:ss"
+    )
+    val customDateFormat: StateFlow<String> = _customDateFormat
+
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
             _isShowNotificationEnabled.value = isEnabled
@@ -107,6 +112,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _notificationStyle.value = style
             sharedPreferences.edit().putString("NOTIFICATION_STYLE", style).apply()
+        }
+    }
+
+    fun updateCustomDateFormat(format: String) {
+        viewModelScope.launch {
+            _customDateFormat.value = format
+            sharedPreferences.edit().putString("CUSTOM_DATE_FORMAT", format).apply()
         }
     }
 }
