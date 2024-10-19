@@ -38,6 +38,7 @@ fun SettingsScreen(
     val isListItemsEnabled by settingsViewModel.isListItemsEnabled.collectAsState()
     val isTimestampEnabled by settingsViewModel.isTimestampEnabled.collectAsState()
     val timestampTemplate by settingsViewModel.timestampTemplate.collectAsState()
+    val dateCreatedTemplate by settingsViewModel.dateCreatedTemplate.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -311,6 +312,18 @@ fun SettingsScreen(
                 },
                 enabled = isDateCreatedEnabled,
                 label = { Text(stringResource(id = R.string.property_name_hint)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = dateCreatedTemplate,
+                onValueChange = {
+                    settingsViewModel.updateDateCreatedTemplate(it)
+                },
+                enabled = isDateCreatedEnabled,
+                label = { Text(stringResource(id = R.string.date_format_hint)) },
                 modifier = Modifier.fillMaxWidth()
             )
         }

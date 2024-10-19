@@ -72,6 +72,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val timestampTemplate: StateFlow<String> = _timestampTemplate
 
+    private val _dateCreatedTemplate = MutableStateFlow(
+        sharedPreferences.getString(
+            "DATE_CREATED_TEMPLATE",
+            "{{YYYY-MM-DD}}T{{HH:mm:ssZ}}"
+        ) ?: "{{YYYY-MM-DD}}T{{HH:mm:ssZ}}"
+    )
+    val dateCreatedTemplate: StateFlow<String> = _dateCreatedTemplate
+
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
             _isShowNotificationEnabled.value = isEnabled
@@ -146,6 +154,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _timestampTemplate.value = template
             sharedPreferences.edit().putString("TIMESTAMP_TEMPLATE", template).apply()
+        }
+    }
+
+    fun updateDateCreatedTemplate(template: String) {
+        viewModelScope.launch {
+            _dateCreatedTemplate.value = template
+            sharedPreferences.edit().putString("DATE_CREATED_TEMPLATE", template).apply()
         }
     }
 }

@@ -189,6 +189,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val isListItemsEnabled = settingsViewModel.isListItemsEnabled.value
         val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
         val timestampTemplate = settingsViewModel.timestampTemplate.value
+        val dateCreatedTemplate = settingsViewModel.dateCreatedTemplate.value
 
 
         if (folderUriString == context.getString(R.string.folder_not_selected)) {
@@ -248,9 +249,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                             dataToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$dataToWrite"
                         }
                         if (isDateCreatedEnabled) {
-                            val fullTimeStamp =
-                                SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
-                            dataToWrite = "---\n$propertyName: ${fullTimeStamp}\n---\n$dataToWrite"
+                            val fullTimeStamp = getFormattedTimestamp(dateCreatedTemplate)
+                            dataToWrite = "---\n$propertyName: $fullTimeStamp\n---\n$dataToWrite"
                         }
                         outputStream.write(dataToWrite.toByteArray())
                     }
@@ -318,21 +318,26 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     }
 
     private fun getFormattedTimestamp(template: String): String {
-        var result = template
-
-        var startIndex = result.indexOf("{{")
-        while (startIndex != -1) {
-            val endIndex = result.indexOf("}}", startIndex + 2)
-            if (endIndex != -1) {
-                val datePart = result.substring(startIndex + 2, endIndex)
-                val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
-                result = result.replaceRange(startIndex, endIndex + 2, formattedDate)
-                startIndex = result.indexOf("{{", endIndex)
+        val sb = StringBuilder()
+        var i = 0
+        while (i < template.length) {
+            if (template[i] == '{' && i < template.length - 1 && template[i + 1] == '{') {
+                i += 2
+                val endIndex = template.indexOf("}}", i)
+                if (endIndex != -1) {
+                    val datePart = template.substring(i, endIndex)
+                    val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
+                    sb.append(formattedDate)
+                    i = endIndex + 2
+                } else {
+                    sb.append(template[i])
+                    i++
+                }
             } else {
-                startIndex = -1
+                sb.append(template[i])
+                i++
             }
         }
-
-        return result.replace(":", "_")
+        return sb.toString()
     }
 }

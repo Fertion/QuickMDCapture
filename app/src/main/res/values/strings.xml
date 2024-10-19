@@ -54,4 +54,6 @@
     <string name="microphone_permission_denied">To use voice input, you need to allow access to the microphone</string>
     <string name="current_version">Current version: %1$s</string>
     <string name="latest_version">Latest version on GitHub: %1$s</string>
+    <string name="date_format_hint">Date format (put date and time formatting patterns inside double curly braces: {{ }})</string>
+
 </resources>
