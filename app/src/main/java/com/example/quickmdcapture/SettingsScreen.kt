@@ -35,6 +35,7 @@ fun SettingsScreen(
     val isAutoSaveEnabled by settingsViewModel.isAutoSaveEnabled.collectAsState()
     val currentFolderUri by settingsViewModel.folderUri.collectAsState()
     val notificationStyle by settingsViewModel.notificationStyle.collectAsState()
+    val customDateFormat by settingsViewModel.customDateFormat.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -264,6 +265,18 @@ fun SettingsScreen(
                 },
                 enabled = isDateCreatedEnabled,
                 label = { Text(stringResource(id = R.string.property_name_hint)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextField(
+                value = customDateFormat,
+                onValueChange = {
+                    settingsViewModel.updateCustomDateFormat(it)
+                },
+                enabled = isDateCreatedEnabled,
+                label = { Text("Custom Date Format") },
                 modifier = Modifier.fillMaxWidth()
             )
         }

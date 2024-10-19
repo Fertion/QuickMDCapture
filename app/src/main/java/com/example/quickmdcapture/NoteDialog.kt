@@ -190,6 +190,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val propertyName = settingsViewModel.propertyName.value
         val noteTitleTemplate = settingsViewModel.noteTitleTemplate.value
         val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
+        val customDateFormat = settingsViewModel.customDateFormat.value
 
         if (folderUriString == context.getString(R.string.folder_not_selected)) {
             if (isScreenLocked()) {
@@ -207,7 +208,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
             val timeStamp = SimpleDateFormat(noteTitleTemplate, Locale.getDefault()).format(Date())
             val fullTimeStamp =
-                SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date())
+                SimpleDateFormat(customDateFormat, Locale.getDefault()).format(Date())
             val fileName = "${timeStamp.replace(":", "_")}.md"
 
             val documentFile = DocumentFile.fromTreeUri(context, folderUri)
