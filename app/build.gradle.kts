@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.archivesName
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -13,11 +15,13 @@ android {
         targetSdk = 33
         versionCode = 5
         versionName = "1.1.1"
+        archivesName = "QuickMDCapture ${versionName}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+
     }
 
 

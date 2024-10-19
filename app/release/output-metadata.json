@@ -13,7 +13,7 @@
       "attributes": [],
       "versionCode": 5,
       "versionName": "1.1.1",
-      "outputFile": "app-release.apk"
+      "outputFile": "QuickMDCapture 1.1.1-release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/app-release.dm"
+        "baselineProfiles/1/QuickMDCapture 1.1.1-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/app-release.dm"
+        "baselineProfiles/0/QuickMDCapture 1.1.1-release.dm"
       ]
     }
   ],
