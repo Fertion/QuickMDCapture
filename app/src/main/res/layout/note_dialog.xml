@@ -6,32 +6,40 @@
     android:padding="16dp"
     android:background="#EEEEEE">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:maxHeight="300dp">
 
-        <EditText
-            android:id="@+id/etNote"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/enter_note"
-            android:inputType="textCapSentences|textAutoCorrect|textMultiLine"
-            android:imeOptions="actionDone"
-            android:gravity="top|start" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <ImageButton
-            android:id="@+id/btnSpeech"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_mic"
-            android:background="@drawable/rounded_button_background"
-            android:contentDescription="@string/speech_to_text" />
+            <EditText
+                android:id="@+id/etNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/enter_note"
+                android:inputType="textCapSentences|textAutoCorrect|textMultiLine"
+                android:imeOptions="actionDone"
+                android:gravity="top|start" />
 
-    </LinearLayout>
+            <ImageButton
+                android:id="@+id/btnSpeech"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_mic"
+                android:background="@drawable/rounded_button_background"
+                android:contentDescription="@string/speech_to_text" />
+
+        </LinearLayout>
+    </ScrollView>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
