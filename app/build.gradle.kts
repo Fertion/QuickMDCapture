@@ -13,8 +13,8 @@ android {
         applicationId = "com.example.quickmdcapture"
         minSdk = 24
         targetSdk = 33
-        versionCode = 5
-        versionName = "1.1.1"
+        versionCode = 6
+        versionName = "1.2.0"
         archivesName = "QuickMDCapture ${versionName}"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -24,14 +24,12 @@ android {
 
     }
 
-
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -50,8 +48,7 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-    }
-}
+    }}
 
 dependencies {
     implementation("androidx.core:core-ktx:1.10.1")

@@ -29,6 +29,9 @@ import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -254,10 +257,17 @@ fun MainScreen(
                 .build()
 
             val gitHubDataService = retrofit.create(GitHubDataService::class.java)
-            val response = gitHubDataService.getLatestRelease()
-            if (response.isSuccessful) {
-                latestRelease = response.body()
-            }
+            gitHubDataService.getLatestRelease().enqueue(object: Callback<Release?> {
+                override fun onResponse(call: Call<Release?>, response: Response<Release?>) {
+                    if (response.isSuccessful) {
+                        latestRelease = response.body()
+                    }
+                }
+
+                override fun onFailure(call: Call<Release?>, t: Throwable) {
+                    // Обработка ошибки
+                }
+            })
         }
     }
 
@@ -341,7 +351,7 @@ fun openLink(context: Context, url: String) {
 
 interface GitHubDataService {
     @GET("repos/Fertion/QuickMDCapture/releases/latest")
-    suspend fun getLatestRelease(): retrofit2.Response<Release>
+    fun getLatestRelease(): Call<Release?>
 }
 
 data class Release(
