@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -90,7 +91,11 @@ class MainActivity : AppCompatActivity() {
                 if (Settings.canDrawOverlays(this)) {
                     settingsViewModel.updateShowOverlockScreenDialog(true)
                 } else {
-                    Toast.makeText(this, getString(R.string.overlay_permission_denied), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        getString(R.string.overlay_permission_denied),
+                        Toast.LENGTH_LONG
+                    ).show()
                     settingsViewModel.updateShowOverlockScreenDialog(false)
                 }
             }
@@ -240,7 +245,8 @@ fun MainScreen(
         coroutineScope.launch {
             val versionedPackage = VersionedPackage(context.packageName, 0)
             val packageInfoFlags = PackageManager.PackageInfoFlags.of(0L)
-            currentVersion = context.packageManager.getPackageInfo(versionedPackage, packageInfoFlags).versionName
+            currentVersion =
+                context.packageManager.getPackageInfo(versionedPackage, packageInfoFlags).versionName
 
             val retrofit = Retrofit.Builder()
                 .baseUrl("https://api.github.com/")
@@ -308,10 +314,13 @@ fun MainScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        ClickableText(
-                            text = stringResource(id = R.string.telegram_link),
-                            onClick = { openLink(context, "https://t.me/for_obsidian") }
-                        )
+                        // Отображаем ссылку на Telegram только если язык системы русский
+                        if (Locale.getDefault().language == "ru") {
+                            ClickableText(
+                                text = stringResource(id = R.string.telegram_link),
+                                onClick = { openLink(context, "https://t.me/for_obsidian") }
+                            )
+                        }
                     }
                 }
             }
