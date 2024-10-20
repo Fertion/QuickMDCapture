@@ -69,6 +69,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         }
 
         btnCancel.setOnClickListener {
+            stopSpeechRecognition()
             dismiss()
         }
 
@@ -100,7 +101,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
 
             override fun onError(error: Int) {
-                dismissWithMessage(context.getString(R.string.note_error))
                 isListening = false
                 btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
                 lastPartialTextLength = 0
