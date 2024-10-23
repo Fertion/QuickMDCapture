@@ -12,6 +12,8 @@ import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -19,13 +21,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class NoteDialog(private val activity: AppCompatActivity, private val isAutoSaveEnabled: Boolean) :
     Dialog(activity) {
@@ -35,14 +37,21 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     private var isListening = false
     private val etNote by lazy { findViewById<EditText>(R.id.etNote) }
     private val btnSpeech by lazy { findViewById<ImageButton>(R.id.btnSpeech) }
+    private val btnRestore by lazy { findViewById<ImageButton>(R.id.btnRestore) }
     private var lastPartialTextLength = 0
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.note_dialog)
 
         settingsViewModel = ViewModelProvider(activity)[SettingsViewModel::class.java]
+
+        if (settingsViewModel.currentText.value.isNotEmpty()) {
+            settingsViewModel.updatePreviousText(settingsViewModel.currentText.value)
+            settingsViewModel.clearCurrentText()
+        }
+
+        setContentView(R.layout.note_dialog)
 
         window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
@@ -52,17 +61,46 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         window?.setBackgroundDrawableResource(R.drawable.rounded_dialog_background)
 
-
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
 
-        etNote.requestFocus()
-        window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+        btnRestore.visibility = if (settingsViewModel.previousText.value.isNotEmpty()) {
+            ImageButton.VISIBLE
+        } else {
+            ImageButton.GONE
+        }
+
+        btnRestore.setOnClickListener {
+            etNote.setText(settingsViewModel.previousText.value)
+            etNote.setSelection(etNote.text.length)
+            settingsViewModel.clearPreviousText()
+            btnRestore.visibility = ImageButton.GONE
+        }
+
+        etNote.setText(settingsViewModel.previousText.value)
+        etNote.setSelection(etNote.text.length)
+
+        etNote.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val text = s?.toString() ?: ""
+                settingsViewModel.updateCurrentText(text)
+                if (text.length >= 10 && settingsViewModel.previousText.value.isNotEmpty()) {
+                    settingsViewModel.clearPreviousText()
+                    btnRestore.visibility = ImageButton.GONE
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         btnSave.setOnClickListener {
             val note = etNote.text.toString()
             if (note.isNotEmpty()) {
                 saveNote(note)
+                settingsViewModel.clearCurrentText()
+                settingsViewModel.clearPreviousText()
             } else {
                 dismissWithMessage(context.getString(R.string.note_error))
             }
@@ -73,12 +111,9 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             dismiss()
         }
 
-
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {
-
-            }
+            override fun onReadyForSpeech(params: Bundle?) {}
 
             override fun onBeginningOfSpeech() {
                 lastPartialTextLength = 0
@@ -88,17 +123,11 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 }
             }
 
-            override fun onRmsChanged(rmsdB: Float) {
+            override fun onRmsChanged(rmsdB: Float) {}
 
-            }
+            override fun onBufferReceived(buffer: ByteArray?) {}
 
-            override fun onBufferReceived(buffer: ByteArray?) {
-
-            }
-
-            override fun onEndOfSpeech() {
-
-            }
+            override fun onEndOfSpeech() {}
 
             override fun onError(error: Int) {
                 isListening = false
@@ -133,9 +162,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 }
             }
 
-            override fun onEvent(eventType: Int, params: Bundle?) {
-
-            }
+            override fun onEvent(eventType: Int, params: Bundle?) {}
         })
 
         btnSpeech.setOnClickListener {
@@ -145,16 +172,20 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 (activity as? TransparentActivity)?.startSpeechRecognition()
             }
         }
-    }
 
+        window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+    }
 
     private fun updateNoteText(text: String) {
         val currentText = etNote.text.toString()
-        val newText = currentText.substring(0, currentText.length - lastPartialTextLength) + text
+        val newText = if (lastPartialTextLength <= currentText.length) {
+            currentText.substring(0, currentText.length - lastPartialTextLength) + text
+        } else {
+            text
+        }
         etNote.setText(newText)
         etNote.setSelection(etNote.text.length)
     }
-
 
     fun startSpeechRecognition() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
@@ -187,12 +218,12 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val timestampTemplate = settingsViewModel.timestampTemplate.value
         val dateCreatedTemplate = settingsViewModel.dateCreatedTemplate.value
 
-
         if (folderUriString == context.getString(R.string.folder_not_selected)) {
             if (isScreenLocked()) {
                 dismissWithMessage(context.getString(R.string.folder_not_selected))
             } else {
-                Toast.makeText(context, context.getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.folder_not_selected), Toast.LENGTH_SHORT)
+                    .show()
                 dismiss()
             }
             return
@@ -209,7 +240,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 if (isScreenLocked()) {
                     dismissWithMessage(context.getString(R.string.note_error))
                 } else {
-                    Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
+                        .show()
                     dismiss()
                 }
                 return
@@ -230,7 +262,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 if (isScreenLocked()) {
                     dismissWithMessage(context.getString(R.string.note_appended))
                 } else {
-                    Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT)
+                        .show()
                     dismiss()
                 }
             } else {
@@ -253,14 +286,16 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     if (isScreenLocked()) {
                         dismissWithMessage(context.getString(R.string.note_saved))
                     } else {
-                        Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT)
+                            .show()
                         dismiss()
                     }
                 } else {
                     if (isScreenLocked()) {
                         dismissWithMessage(context.getString(R.string.note_error))
                     } else {
-                        Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
+                            .show()
                         dismiss()
                     }
                 }
@@ -269,7 +304,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             if (isScreenLocked()) {
                 dismissWithMessage(context.getString(R.string.note_error))
             } else {
-                Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
+                    .show()
                 dismiss()
             }
         }
@@ -308,7 +344,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 startIndex = -1
             }
         }
-
 
         return "${result.replace(":", "_")}.md"
     }

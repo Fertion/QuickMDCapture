@@ -75,10 +75,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _dateCreatedTemplate = MutableStateFlow(
         sharedPreferences.getString(
             "DATE_CREATED_TEMPLATE",
-            "{{yyyy.MM.dd}}T{{HH:mm:ssZ}}"
-        ) ?: "{{yyyy.MM.dd}}T{{HH:mm:ssZ}}"
+            "{{YYYY-MM-DD}}T{{HH:mm:ssZ}}"
+        ) ?: "{{YYYY-MM-DD}}T{{HH:mm:ssZ}}"
     )
     val dateCreatedTemplate: StateFlow<String> = _dateCreatedTemplate
+
+    private val _currentText = MutableStateFlow(sharedPreferences.getString("CURRENT_TEXT", "") ?: "")
+    val currentText: StateFlow<String> = _currentText
+
+    private val _previousText = MutableStateFlow(sharedPreferences.getString("PREVIOUS_TEXT", "") ?: "")
+    val previousText: StateFlow<String> = _previousText
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -162,5 +168,27 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _dateCreatedTemplate.value = template
             sharedPreferences.edit().putString("DATE_CREATED_TEMPLATE", template).apply()
         }
+    }
+
+    fun updateCurrentText(text: String) {
+        viewModelScope.launch {
+            _currentText.value = text
+            sharedPreferences.edit().putString("CURRENT_TEXT", text).apply()
+        }
+    }
+
+    fun updatePreviousText(text: String) {
+        viewModelScope.launch {
+            _previousText.value = text
+            sharedPreferences.edit().putString("PREVIOUS_TEXT", text).apply()
+        }
+    }
+
+    fun clearCurrentText() {
+        updateCurrentText("")
+    }
+
+    fun clearPreviousText() {
+        updatePreviousText("")
     }
 }

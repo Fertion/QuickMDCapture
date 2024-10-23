@@ -55,5 +55,6 @@
     <string name="current_version">Текущая версия: %1$s</string>
     <string name="latest_version">Последняя версия на GitHub: %1$s</string>
     <string name="date_format_hint">Формат даты (заключите шаблоны форматирования даты и времени в двойные фигурные скобки: {{ }})</string>
+    <string name="restore_text">Восстановить текст</string>
 
 </resources>

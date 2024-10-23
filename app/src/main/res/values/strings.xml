@@ -55,5 +55,6 @@
     <string name="current_version">Current version: %1$s</string>
     <string name="latest_version">Latest version on GitHub: %1$s</string>
     <string name="date_format_hint">Date format (put date and time formatting patterns inside double curly braces: {{ }})</string>
+    <string name="restore_text">Restore Text</string>
 
 </resources>
