@@ -46,6 +46,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         settingsViewModel = ViewModelProvider(activity)[SettingsViewModel::class.java]
 
+        // Переносим несохраненный текущий текст в previousText, если он не пустой
         if (settingsViewModel.currentText.value.isNotEmpty()) {
             settingsViewModel.updatePreviousText(settingsViewModel.currentText.value)
             settingsViewModel.clearCurrentText()
@@ -64,6 +65,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
 
+        // Управляем видимостью кнопки восстановления
         btnRestore.visibility = if (settingsViewModel.previousText.value.isNotEmpty()) {
             ImageButton.VISIBLE
         } else {
@@ -77,8 +79,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             btnRestore.visibility = ImageButton.GONE
         }
 
-        etNote.setText(settingsViewModel.previousText.value)
-        etNote.setSelection(etNote.text.length)
+        // Инициализируем поле ввода пустым
+        etNote.setText("")
 
         etNote.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -99,8 +101,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             val note = etNote.text.toString()
             if (note.isNotEmpty()) {
                 saveNote(note)
-                settingsViewModel.clearCurrentText()
-                settingsViewModel.clearPreviousText()
             } else {
                 dismissWithMessage(context.getString(R.string.note_error))
             }
@@ -264,6 +264,9 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 } else {
                     Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT)
                         .show()
+                    // Очистка переменных только при успешном сохранении
+                    settingsViewModel.clearCurrentText()
+                    settingsViewModel.clearPreviousText()
                     dismiss()
                 }
             } else {
@@ -288,6 +291,9 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     } else {
                         Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT)
                             .show()
+                        // Очистка переменных только при успешном сохранении
+                        settingsViewModel.clearCurrentText()
+                        settingsViewModel.clearPreviousText()
                         dismiss()
                     }
                 } else {
