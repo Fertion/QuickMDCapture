@@ -37,7 +37,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import java.util.*
 
-
 class MainActivity : AppCompatActivity() {
 
     private val folderPicker =
@@ -46,7 +45,10 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    contentResolver.takePersistableUriPermission(it, takeFlags)
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        contentResolver.takePersistableUriPermission(it, takeFlags)
+                    }
 
                     val documentFile = DocumentFile.fromTreeUri(this, it)
                     if (documentFile != null && documentFile.canWrite()) {
@@ -72,6 +74,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
     private val requestNotificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -121,6 +124,7 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (settingsViewModel.isShowNotificationEnabled.value) {
                 checkNotificationPermission()
@@ -135,7 +139,6 @@ class MainActivity : AppCompatActivity() {
             checkOverlayPermission()
         }
     }
-
 
     fun startNotificationService() {
         val serviceIntent = Intent(this, NotificationService::class.java)
@@ -155,7 +158,7 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.POST_NOTIFICATIONS
-            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             startNotificationService()
         } else {
@@ -246,10 +249,14 @@ fun MainScreen(
 
     fun checkLatestRelease() {
         coroutineScope.launch {
-            val versionedPackage = VersionedPackage(context.packageName, 0)
-            val packageInfoFlags = PackageManager.PackageInfoFlags.of(0L)
-            currentVersion =
+            currentVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val versionedPackage = VersionedPackage(context.packageName, 0)
+                val packageInfoFlags = PackageManager.PackageInfoFlags.of(0L)
                 context.packageManager.getPackageInfo(versionedPackage, packageInfoFlags).versionName
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            }
 
             val retrofit = Retrofit.Builder()
                 .baseUrl("https://api.github.com/")
@@ -257,7 +264,7 @@ fun MainScreen(
                 .build()
 
             val gitHubDataService = retrofit.create(GitHubDataService::class.java)
-            gitHubDataService.getLatestRelease().enqueue(object: Callback<Release?> {
+            gitHubDataService.getLatestRelease().enqueue(object : Callback<Release?> {
                 override fun onResponse(call: Call<Release?>, response: Response<Release?>) {
                     if (response.isSuccessful) {
                         latestRelease = response.body()
@@ -265,13 +272,12 @@ fun MainScreen(
                 }
 
                 override fun onFailure(call: Call<Release?>, t: Throwable) {
-                    // Обработка ошибки
+                    // Handle error
                 }
             })
         }
     }
 
-    // Вызываем функцию при каждом появлении MainScreen
     LaunchedEffect(Unit) {
         checkLatestRelease()
     }
@@ -296,7 +302,6 @@ fun MainScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Исходный код
                 Text(
                     text = stringResource(id = R.string.source_code_title),
                     fontWeight = FontWeight.Bold,
@@ -324,7 +329,6 @@ fun MainScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Отображаем ссылку на Telegram только если язык системы русский
                         if (Locale.getDefault().language == "ru") {
                             ClickableText(
                                 text = stringResource(id = R.string.telegram_link),
