@@ -75,8 +75,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _dateCreatedTemplate = MutableStateFlow(
         sharedPreferences.getString(
             "DATE_CREATED_TEMPLATE",
-            "{{YYYY-MM-DD}}T{{HH:mm:ssZ}}"
-        ) ?: "{{YYYY-MM-DD}}T{{HH:mm:ssZ}}"
+            "{{yyyy.MM.dd}}T{{HH:mm:ssZ}}"
+        ) ?: "{{yyyy.MM.dd}}T{{HH:mm:ssZ}}"
     )
     val dateCreatedTemplate: StateFlow<String> = _dateCreatedTemplate
 
