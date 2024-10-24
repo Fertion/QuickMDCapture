@@ -97,6 +97,11 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             override fun afterTextChanged(s: Editable?) {}
         })
 
+
+        etNote.requestFocus()
+        window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+
+
         btnSave.setOnClickListener {
             val note = etNote.text.toString()
             if (note.isNotEmpty()) {
