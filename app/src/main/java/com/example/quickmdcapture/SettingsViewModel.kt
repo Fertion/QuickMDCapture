@@ -86,6 +86,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _previousText = MutableStateFlow(sharedPreferences.getString("PREVIOUS_TEXT", "") ?: "")
     val previousText: StateFlow<String> = _previousText
 
+    private val _tempText = MutableStateFlow("")
+    val tempText: StateFlow<String> = _tempText
+
+
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
             _isShowNotificationEnabled.value = isEnabled
@@ -184,11 +188,21 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun updateTempText(text: String) {
+        viewModelScope.launch {
+            _tempText.value = text
+        }
+    }
+
     fun clearCurrentText() {
         updateCurrentText("")
     }
 
     fun clearPreviousText() {
         updatePreviousText("")
+    }
+
+    fun clearTempText() {
+        updateTempText("")
     }
 }

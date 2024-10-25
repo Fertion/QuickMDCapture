@@ -265,6 +265,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     outputStream.write("\n$textToWrite".toByteArray())
                 }
                 if (isScreenLocked()) {
+                    settingsViewModel.updateTempText(note)
                     dismissWithMessage(context.getString(R.string.note_appended))
                 } else {
                     Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT)
@@ -292,6 +293,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                         outputStream.write(dataToWrite.toByteArray())
                     }
                     if (isScreenLocked()) {
+                        settingsViewModel.updateTempText(note)
                         dismissWithMessage(context.getString(R.string.note_saved))
                     } else {
                         Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT)
@@ -327,6 +329,13 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         imm.hideSoftInputFromWindow(etNote.windowToken, 0)
         etNote.setText(message)
         handler.postDelayed({
+            if (message == context.getString(R.string.note_saved) || message == context.getString(R.string.note_appended)) {
+                settingsViewModel.clearCurrentText()
+            } else {
+                settingsViewModel.updateCurrentText(settingsViewModel.tempText.value)
+            }
+
+            settingsViewModel.clearTempText()
             dismiss()
         }, 1000)
     }
