@@ -39,11 +39,84 @@ fun SettingsScreen(
     val isTimestampEnabled by settingsViewModel.isTimestampEnabled.collectAsState()
     val timestampTemplate by settingsViewModel.timestampTemplate.collectAsState()
     val dateCreatedTemplate by settingsViewModel.dateCreatedTemplate.collectAsState()
+    val theme by settingsViewModel.theme.collectAsState()
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
     var showOverlaySettingsInfoDialog by remember { mutableStateOf(false) }
     var expandedNotificationStyle by remember { mutableStateOf(false) }
+    var expandedTheme by remember { mutableStateOf(false) }
+
+
+    // Общие настройки
+    Text(
+        text = stringResource(id = R.string.general_settings_title),
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.Black
+    )
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Настройка темы
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(id = R.string.theme_setting),
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ExposedDropdownMenuBox(
+                    expanded = expandedTheme,
+                    onExpandedChange = { expandedTheme = it }
+                ) {
+                    TextField(
+                        value = when (theme) {
+                            "light" -> stringResource(id = R.string.theme_light)
+                            "dark" -> stringResource(id = R.string.theme_dark)
+                            else -> stringResource(id = R.string.theme_system)
+                        },
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedTheme,
+                        onDismissRequest = { expandedTheme = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.theme_light)) },
+                            onClick = {
+                                settingsViewModel.updateTheme("light")
+                                expandedTheme = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.theme_dark)) },
+                            onClick = {
+                                settingsViewModel.updateTheme("dark")
+                                expandedTheme = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.theme_system)) },
+                            onClick = {
+                                settingsViewModel.updateTheme("system")
+                                expandedTheme = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

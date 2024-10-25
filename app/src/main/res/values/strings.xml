@@ -56,5 +56,9 @@
     <string name="latest_version">Latest version on GitHub: %1$s</string>
     <string name="date_format_hint">Date format (put date and time formatting patterns inside double curly braces: {{ }})</string>
     <string name="restore_text">Restore Text</string>
-
+    <string name="general_settings_title">General settings</string>
+    <string name="theme_setting">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
 </resources>

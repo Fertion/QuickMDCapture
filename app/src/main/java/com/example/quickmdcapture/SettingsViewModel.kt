@@ -2,6 +2,7 @@ package com.example.quickmdcapture
 
 import android.app.Application
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -89,6 +90,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _tempText = MutableStateFlow("")
     val tempText: StateFlow<String> = _tempText
 
+    private val _theme = MutableStateFlow(sharedPreferences.getString("THEME", "system") ?: "system")
+    val theme: StateFlow<String> = _theme
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -204,5 +207,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun clearTempText() {
         updateTempText("")
+    }
+
+    fun updateTheme(theme: String) {
+        viewModelScope.launch {
+            _theme.value = theme
+            sharedPreferences.edit().putString("THEME", theme).apply()
+        }
+    }
+
+    fun getCurrentTheme(): Int {
+        return when (theme.value) {
+            "light" -> AppCompatDelegate.MODE_NIGHT_NO
+            "dark" -> AppCompatDelegate.MODE_NIGHT_YES
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
     }
 }

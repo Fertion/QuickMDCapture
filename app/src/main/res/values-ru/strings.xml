@@ -56,5 +56,9 @@
     <string name="latest_version">Последняя версия на GitHub: %1$s</string>
     <string name="date_format_hint">Формат даты (заключите шаблоны форматирования даты и времени в двойные фигурные скобки: {{ }})</string>
     <string name="restore_text">Восстановить текст</string>
-
+    <string name="general_settings_title">Общие настройки</string>
+    <string name="theme_setting">Тема</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_system">Системная</string>
 </resources>
