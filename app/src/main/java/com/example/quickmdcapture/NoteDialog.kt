@@ -20,9 +20,11 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
@@ -46,7 +48,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         settingsViewModel = ViewModelProvider(activity)[SettingsViewModel::class.java]
 
-        // Переносим несохраненный текущий текст в previousText, если он не пустой
         if (settingsViewModel.currentText.value.isNotEmpty()) {
             settingsViewModel.updatePreviousText(settingsViewModel.currentText.value)
             settingsViewModel.clearCurrentText()
@@ -65,7 +66,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
 
-        // Управляем видимостью кнопки восстановления
         btnRestore.visibility = if (settingsViewModel.previousText.value.isNotEmpty()) {
             ImageButton.VISIBLE
         } else {
@@ -79,7 +79,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             btnRestore.visibility = ImageButton.GONE
         }
 
-        // Инициализируем поле ввода пустым
         etNote.setText("")
 
         etNote.addTextChangedListener(object : TextWatcher {
@@ -178,6 +177,32 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
         }
 
+        // Apply theme
+        val theme = settingsViewModel.theme.value
+        val dialogLayout = findViewById<LinearLayout>(R.id.noteDialogLayout)
+        when (theme) {
+            "light" -> {
+                dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background)
+                etNote.setTextColor(ContextCompat.getColor(context, R.color.black))
+            }
+            "dark" -> {
+                dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background_dark)
+                etNote.setTextColor(ContextCompat.getColor(context, R.color.light_gray))
+            }
+            else -> {
+                when (AppCompatDelegate.getDefaultNightMode()) {
+                    AppCompatDelegate.MODE_NIGHT_YES -> {
+                        dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background_dark)
+                        etNote.setTextColor(ContextCompat.getColor(context, R.color.light_gray))
+                    }
+                    else -> {
+                        dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background)
+                        etNote.setTextColor(ContextCompat.getColor(context, R.color.black))
+                    }
+                }
+            }
+        }
+
         window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     }
 
@@ -270,7 +295,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 } else {
                     Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT)
                         .show()
-                    // Очистка переменных только при успешном сохранении
                     settingsViewModel.clearCurrentText()
                     settingsViewModel.clearPreviousText()
                     dismiss()
@@ -298,7 +322,6 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     } else {
                         Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT)
                             .show()
-                        // Очистка переменных только при успешном сохранении
                         settingsViewModel.clearCurrentText()
                         settingsViewModel.clearPreviousText()
                         dismiss()
