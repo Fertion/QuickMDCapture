@@ -26,6 +26,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
@@ -96,10 +97,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             override fun afterTextChanged(s: Editable?) {}
         })
 
-
         etNote.requestFocus()
         window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
-
 
         btnSave.setOnClickListener {
             val note = etNote.text.toString()
@@ -180,24 +179,61 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         // Apply theme
         val theme = settingsViewModel.theme.value
         val dialogLayout = findViewById<LinearLayout>(R.id.noteDialogLayout)
+        val buttonBackground = ContextCompat.getDrawable(context, R.drawable.rounded_button_background)
         when (theme) {
             "light" -> {
                 dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background)
                 etNote.setTextColor(ContextCompat.getColor(context, R.color.black))
+                etNote.setHintTextColor(ContextCompat.getColor(context, R.color.black))
+                btnSpeech.background = buttonBackground
+                btnRestore.background = buttonBackground
+                btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
             }
             "dark" -> {
                 dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background_dark)
                 etNote.setTextColor(ContextCompat.getColor(context, R.color.light_gray))
+                etNote.setHintTextColor(ContextCompat.getColor(context, R.color.light_gray))
+                btnSpeech.background = buttonBackground
+                btnRestore.background = buttonBackground
+                val micDrawable = ContextCompat.getDrawable(context, R.drawable.ic_mic)
+                DrawableCompat.setTint(micDrawable!!, ContextCompat.getColor(context, R.color.light_gray))
+                btnSpeech.setImageDrawable(micDrawable)
+
+                // Изменение цвета каемки кнопки
+                if (buttonBackground != null) {
+                    val strokeColor = ContextCompat.getColor(context, R.color.dark_gray)
+                    DrawableCompat.setTint(DrawableCompat.wrap(buttonBackground).mutate(), strokeColor)
+                    btnSpeech.background = buttonBackground
+                    btnRestore.background = buttonBackground
+                }
             }
             else -> {
                 when (AppCompatDelegate.getDefaultNightMode()) {
                     AppCompatDelegate.MODE_NIGHT_YES -> {
                         dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background_dark)
                         etNote.setTextColor(ContextCompat.getColor(context, R.color.light_gray))
+                        etNote.setHintTextColor(ContextCompat.getColor(context, R.color.light_gray))
+                        btnSpeech.background = buttonBackground
+                        btnRestore.background = buttonBackground
+                        val micDrawable = ContextCompat.getDrawable(context, R.drawable.ic_mic)
+                        DrawableCompat.setTint(micDrawable!!, ContextCompat.getColor(context, R.color.light_gray))
+                        btnSpeech.setImageDrawable(micDrawable)
+
+                        // Изменение цвета каемки кнопки
+                        if (buttonBackground != null) {
+                            val strokeColor = ContextCompat.getColor(context, R.color.dark_gray)
+                            DrawableCompat.setTint(DrawableCompat.wrap(buttonBackground).mutate(), strokeColor)
+                            btnSpeech.background = buttonBackground
+                            btnRestore.background = buttonBackground
+                        }
                     }
                     else -> {
                         dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background)
                         etNote.setTextColor(ContextCompat.getColor(context, R.color.black))
+                        etNote.setHintTextColor(ContextCompat.getColor(context, R.color.black))
+                        btnSpeech.background = buttonBackground
+                        btnRestore.background = buttonBackground
+                        btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
                     }
                 }
             }
