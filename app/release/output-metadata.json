@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 6,
-      "versionName": "1.2.0",
-      "outputFile": "QuickMDCapture 1.2.0-release.apk"
+      "versionCode": 7,
+      "versionName": "1.2.1",
+      "outputFile": "QuickMDCapture_1.2.1-release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/QuickMDCapture 1.2.0-release.dm"
+        "baselineProfiles/1/QuickMDCapture_1.2.1-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/QuickMDCapture 1.2.0-release.dm"
+        "baselineProfiles/0/QuickMDCapture_1.2.1-release.dm"
       ]
     }
   ],
