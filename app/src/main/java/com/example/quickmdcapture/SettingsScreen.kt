@@ -515,7 +515,7 @@ fun SettingsScreen(
 fun ClickableText(text: String, onClick: () -> Unit) {
     Text(
         text = text,
-        color = Color.Blue,
+        color = Color(0xFFD235D2),
         modifier = Modifier.clickable { onClick() }
     )
 }
