@@ -289,17 +289,12 @@ fun MainScreen(
     val backgroundColor = when (theme) {
         "light" -> Color(0xFF9E7CB2)
         "dark" -> Color(0xFF303030)
-        else -> {
-            if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-                Color(0xFF303030)
-            } else {
-                Color(0xFF9E7CB2)
-            }
-        }
+        else -> Color(0xFF9E7CB2)
     }
 
     val textColor = if (theme == "dark") Color.LightGray else Color.Black
-    val cardColors = if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
+    val cardColors =
+        if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
 
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
         LazyColumn(
@@ -331,11 +326,20 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    colors = if (theme == "dark") cardColors else CardDefaults.cardColors() // Исправлено условие
+                    colors = cardColors
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"), color = textColor)
-                        Text(stringResource(id = R.string.latest_version, latestRelease?.tag_name ?: "Unknown"), color = textColor)
+                        Text(
+                            stringResource(id = R.string.current_version, currentVersion ?: "Unknown"),
+                            color = textColor
+                        )
+                        Text(
+                            stringResource(
+                                id = R.string.latest_version,
+                                latestRelease?.tag_name ?: "Unknown"
+                            ),
+                            color = textColor
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                         ClickableText(
                             text = stringResource(id = R.string.github_link),

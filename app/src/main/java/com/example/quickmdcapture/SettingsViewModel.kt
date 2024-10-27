@@ -1,6 +1,7 @@
 package com.example.quickmdcapture
 
 import android.app.Application
+import android.app.UiModeManager
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
@@ -90,8 +91,36 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _tempText = MutableStateFlow("")
     val tempText: StateFlow<String> = _tempText
 
-    private val _theme = MutableStateFlow(sharedPreferences.getString("THEME", "system") ?: "system")
+    private val _selectedTheme =
+        MutableStateFlow(sharedPreferences.getString("SELECTED_THEME", "system") ?: "system")
+    val selectedTheme: StateFlow<String> = _selectedTheme
+
+    private val _theme = MutableStateFlow(
+        when (_selectedTheme.value) {
+            "light" -> "light"
+            "dark" -> "dark"
+            else -> if (isSystemInDarkTheme(application)) "dark" else "light"
+        }
+    )
     val theme: StateFlow<String> = _theme
+
+    init {
+        viewModelScope.launch {
+            _selectedTheme.collect {
+                _theme.value = when (it) {
+                    "light" -> "light"
+                    "dark" -> "dark"
+                    else -> if (isSystemInDarkTheme(application)) "dark" else "light"
+                }
+            }
+        }
+    }
+
+    private fun isSystemInDarkTheme(context: Context): Boolean {
+        val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        return uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
+    }
+
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -211,8 +240,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun updateTheme(theme: String) {
         viewModelScope.launch {
-            _theme.value = theme
-            sharedPreferences.edit().putString("THEME", theme).apply()
+            _selectedTheme.value = theme
+            sharedPreferences.edit().putString("SELECTED_THEME", theme).apply()
         }
     }
 

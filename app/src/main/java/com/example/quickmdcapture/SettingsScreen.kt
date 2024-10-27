@@ -40,7 +40,9 @@ fun SettingsScreen(
     val isTimestampEnabled by settingsViewModel.isTimestampEnabled.collectAsState()
     val timestampTemplate by settingsViewModel.timestampTemplate.collectAsState()
     val dateCreatedTemplate by settingsViewModel.dateCreatedTemplate.collectAsState()
+    val selectedTheme by settingsViewModel.selectedTheme.collectAsState()
     val theme by settingsViewModel.theme.collectAsState()
+
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -49,7 +51,8 @@ fun SettingsScreen(
     var expandedTheme by remember { mutableStateOf(false) }
 
     val textColor = if (theme == "dark") Color.LightGray else Color.Black
-    val cardColors = if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
+    val cardColors =
+        if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
     val dropdownMenuBackgroundColor = if (theme == "dark") Color(0xFF424242) else Color.White
 
     // Общие настройки
@@ -79,14 +82,16 @@ fun SettingsScreen(
                     onExpandedChange = { expandedTheme = it }
                 ) {
                     TextField(
-                        value = when (theme) {
+                        value = when (selectedTheme) {
                             "light" -> stringResource(id = R.string.theme_light)
                             "dark" -> stringResource(id = R.string.theme_dark)
                             else -> stringResource(id = R.string.theme_system)
                         },
                         onValueChange = {},
                         readOnly = true,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(),
@@ -196,7 +201,9 @@ fun SettingsScreen(
                         },
                         onValueChange = {},
                         readOnly = true,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(),
@@ -212,7 +219,12 @@ fun SettingsScreen(
                         modifier = Modifier.background(dropdownMenuBackgroundColor)
                     ) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.notification_style_standard), color = textColor) },
+                            text = {
+                                Text(
+                                    stringResource(id = R.string.notification_style_standard),
+                                    color = textColor
+                                )
+                            },
                             onClick = {
                                 settingsViewModel.updateNotificationStyle("standard")
                                 expandedNotificationStyle = false
@@ -221,7 +233,12 @@ fun SettingsScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.notification_style_expanded_with_buttons_1), color = textColor) },
+                            text = {
+                                Text(
+                                    stringResource(id = R.string.notification_style_expanded_with_buttons_1),
+                                    color = textColor
+                                )
+                            },
                             onClick = {
                                 settingsViewModel.updateNotificationStyle("expanded_with_buttons_1")
                                 expandedNotificationStyle = false
