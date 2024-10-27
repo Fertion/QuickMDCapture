@@ -1,6 +1,7 @@
 package com.example.quickmdcapture
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -49,6 +50,7 @@ fun SettingsScreen(
 
     val textColor = if (theme == "dark") Color.LightGray else Color.Black
     val cardColors = if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
+    val dropdownMenuBackgroundColor = if (theme == "dark") Color(0xFF424242) else Color.White
 
     // Общие настройки
     Text(
@@ -93,9 +95,11 @@ fun SettingsScreen(
                             containerColor = Color.Transparent
                         )
                     )
+                    // Устанавливаем фон для ExposedDropdownMenu
                     ExposedDropdownMenu(
                         expanded = expandedTheme,
-                        onDismissRequest = { expandedTheme = false }
+                        onDismissRequest = { expandedTheme = false },
+                        modifier = Modifier.background(dropdownMenuBackgroundColor)
                     ) {
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.theme_light), color = textColor) },
@@ -201,10 +205,11 @@ fun SettingsScreen(
                             containerColor = Color.Transparent
                         )
                     )
-
+                    // Устанавливаем фон для ExposedDropdownMenu
                     ExposedDropdownMenu(
                         expanded = expandedNotificationStyle,
-                        onDismissRequest = { expandedNotificationStyle = false }
+                        onDismissRequest = { expandedNotificationStyle = false },
+                        modifier = Modifier.background(dropdownMenuBackgroundColor)
                     ) {
                         DropdownMenuItem(
                             text = { Text(stringResource(id = R.string.notification_style_standard), color = textColor) },

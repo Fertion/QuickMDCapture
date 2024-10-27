@@ -298,8 +298,8 @@ fun MainScreen(
         }
     }
 
-    val textColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
-    val cardColors = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
+    val textColor = if (theme == "dark") Color.LightGray else Color.Black
+    val cardColors = if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
 
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
         LazyColumn(
@@ -331,7 +331,7 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    colors = cardColors
+                    colors = if (theme == "dark") cardColors else CardDefaults.cardColors() // Исправлено условие
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"), color = textColor)
