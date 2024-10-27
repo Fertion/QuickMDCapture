@@ -14,6 +14,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -74,7 +75,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
     private val requestNotificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -115,6 +115,9 @@ class MainActivity : AppCompatActivity() {
         settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
         setContent {
+            val currentTheme = settingsViewModel.getCurrentTheme()
+            AppCompatDelegate.setDefaultNightMode(currentTheme)
+
             MaterialTheme {
                 MainScreen(
                     onSelectFolder = { folderPicker.launch(null) },
@@ -124,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (settingsViewModel.isShowNotificationEnabled.value) {
                 checkNotificationPermission()
@@ -246,6 +248,8 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     var latestRelease by remember { mutableStateOf<Release?>(null) }
     var currentVersion by remember { mutableStateOf<String?>(null) }
+    val theme by settingsViewModel.theme.collectAsState()
+
 
     fun checkLatestRelease() {
         coroutineScope.launch {
@@ -282,7 +286,19 @@ fun MainScreen(
         checkLatestRelease()
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF9E7CB2)) {
+    val backgroundColor = when (theme) {
+        "light" -> Color(0xFF9E7CB2)
+        "dark" -> Color(0xFF303030)
+        else -> {
+            if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                Color(0xFF303030)
+            } else {
+                Color(0xFF9E7CB2)
+            }
+        }
+    }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -306,7 +322,7 @@ fun MainScreen(
                     text = stringResource(id = R.string.source_code_title),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color.Black
+                    color = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
                 )
                 OutlinedCard(
                     modifier = Modifier
@@ -314,8 +330,8 @@ fun MainScreen(
                         .padding(top = 8.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"))
-                        Text(stringResource(id = R.string.latest_version, latestRelease?.tag_name ?: "Unknown"))
+                        Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"), color = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black)
+                        Text(stringResource(id = R.string.latest_version, latestRelease?.tag_name ?: "Unknown"), color = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black)
                         Spacer(modifier = Modifier.height(8.dp))
                         ClickableText(
                             text = stringResource(id = R.string.github_link),

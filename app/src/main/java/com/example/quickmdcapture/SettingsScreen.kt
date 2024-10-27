@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.appcompat.app.AppCompatDelegate
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,18 +48,21 @@ fun SettingsScreen(
     var expandedNotificationStyle by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
 
+    val textColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
+    val cardColors = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
 
     // Общие настройки
     Text(
         text = stringResource(id = R.string.general_settings_title),
         fontWeight = FontWeight.Bold,
         modifier = Modifier.fillMaxWidth(),
-        color = Color.Black
+        color = textColor
     )
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Настройка темы
@@ -66,7 +70,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(id = R.string.theme_setting),
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color.Black
+                    color = textColor
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 ExposedDropdownMenuBox(
@@ -84,28 +88,32 @@ fun SettingsScreen(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor()
+                            .menuAnchor(),
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = textColor,
+                            containerColor = Color.Transparent
+                        )
                     )
                     ExposedDropdownMenu(
                         expanded = expandedTheme,
                         onDismissRequest = { expandedTheme = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.theme_light)) },
+                            text = { Text(stringResource(id = R.string.theme_light), color = textColor) },
                             onClick = {
                                 settingsViewModel.updateTheme("light")
                                 expandedTheme = false
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.theme_dark)) },
+                            text = { Text(stringResource(id = R.string.theme_dark), color = textColor) },
                             onClick = {
                                 settingsViewModel.updateTheme("dark")
                                 expandedTheme = false
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.theme_system)) },
+                            text = { Text(stringResource(id = R.string.theme_system), color = textColor) },
                             onClick = {
                                 settingsViewModel.updateTheme("system")
                                 expandedTheme = false
@@ -126,16 +134,17 @@ fun SettingsScreen(
             text = stringResource(id = R.string.add_notes_methods_title),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f),
-            color = Color.Black
+            color = textColor
         )
         IconButton(onClick = { showAddNotesMethodsInfoDialog = true }) {
-            Icon(Icons.Filled.Info, contentDescription = "Info")
+            Icon(Icons.Filled.Info, contentDescription = "Info", tint = textColor)
         }
     }
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -146,7 +155,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     stringResource(id = R.string.add_notes_via_notification),
-                    color = Color.Black,
+                    color = textColor,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -169,7 +178,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(id = R.string.notification_style),
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color.Black
+                    color = textColor
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 ExposedDropdownMenuBox(
@@ -187,7 +196,11 @@ fun SettingsScreen(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor()
+                            .menuAnchor(),
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = textColor,
+                            containerColor = Color.Transparent
+                        )
                     )
 
                     ExposedDropdownMenu(
@@ -195,7 +208,7 @@ fun SettingsScreen(
                         onDismissRequest = { expandedNotificationStyle = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.notification_style_standard)) },
+                            text = { Text(stringResource(id = R.string.notification_style_standard), color = textColor) },
                             onClick = {
                                 settingsViewModel.updateNotificationStyle("standard")
                                 expandedNotificationStyle = false
@@ -204,7 +217,7 @@ fun SettingsScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.notification_style_expanded_with_buttons_1)) },
+                            text = { Text(stringResource(id = R.string.notification_style_expanded_with_buttons_1), color = textColor) },
                             onClick = {
                                 settingsViewModel.updateNotificationStyle("expanded_with_buttons_1")
                                 expandedNotificationStyle = false
@@ -221,13 +234,13 @@ fun SettingsScreen(
             ) {
                 Text(
                     stringResource(id = R.string.show_overlock_screen_dialog),
-                    color = Color.Black,
+                    color = textColor,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 IconButton(onClick = { showOverlaySettingsInfoDialog = true }) {
-                    Icon(Icons.Filled.Info, contentDescription = "Info")
+                    Icon(Icons.Filled.Info, contentDescription = "Info", tint = textColor)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Switch(
@@ -253,21 +266,26 @@ fun SettingsScreen(
             text = stringResource(id = R.string.save_settings_title),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f),
-            color = Color.Black
+            color = textColor
         )
         IconButton(onClick = { showSaveSettingsInfoDialog = true }) {
-            Icon(Icons.Filled.Info, contentDescription = "Info")
+            Icon(Icons.Filled.Info, contentDescription = "Info", tint = textColor)
         }
     }
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Button(
                 onClick = onSelectFolder,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color(0xFF616161) else Color(0xFF9E7CB2),
+                    contentColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.White
+                )
             ) {
                 Text(stringResource(id = R.string.select_folder))
             }
@@ -277,7 +295,7 @@ fun SettingsScreen(
                     id = R.string.folder_selected,
                     getFolderDisplayName(currentFolderUri)
                 ),
-                color = Color.Black,
+                color = textColor,
                 modifier = Modifier.fillMaxWidth(),
                 overflow = TextOverflow.Visible,
                 maxLines = 2
@@ -289,8 +307,12 @@ fun SettingsScreen(
                 onValueChange = {
                     settingsViewModel.updateNoteDateTemplate(it)
                 },
-                label = { Text(stringResource(id = R.string.filename_template_hint)) },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text(stringResource(id = R.string.filename_template_hint), color = textColor) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = textColor,
+                    containerColor = Color.Transparent
+                )
             )
 
             Row(
@@ -299,7 +321,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     stringResource(id = R.string.save_as_list_items),
-                    color = Color.Black,
+                    color = textColor,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -319,7 +341,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     stringResource(id = R.string.add_timestamp),
-                    color = Color.Black,
+                    color = textColor,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -338,9 +360,13 @@ fun SettingsScreen(
                 onValueChange = {
                     settingsViewModel.updateTimestampTemplate(it)
                 },
-                label = { Text(stringResource(id = R.string.timestamp_template_hint)) },
+                label = { Text(stringResource(id = R.string.timestamp_template_hint), color = textColor) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = isTimestampEnabled
+                enabled = isTimestampEnabled,
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = textColor,
+                    containerColor = Color.Transparent
+                )
             )
         }
     }
@@ -349,12 +375,13 @@ fun SettingsScreen(
         text = stringResource(id = R.string.yaml_settings_title),
         fontWeight = FontWeight.Bold,
         modifier = Modifier.fillMaxWidth(),
-        color = Color.Black
+        color = textColor
     )
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -363,7 +390,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     stringResource(id = R.string.save_date_created),
-                    color = Color.Black,
+                    color = textColor,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -384,8 +411,12 @@ fun SettingsScreen(
                     settingsViewModel.updatePropertyName(it)
                 },
                 enabled = isDateCreatedEnabled,
-                label = { Text(stringResource(id = R.string.property_name_hint)) },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text(stringResource(id = R.string.property_name_hint), color = textColor) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = textColor,
+                    containerColor = Color.Transparent
+                )
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -396,8 +427,12 @@ fun SettingsScreen(
                     settingsViewModel.updateDateCreatedTemplate(it)
                 },
                 enabled = isDateCreatedEnabled,
-                label = { Text(stringResource(id = R.string.date_format_hint)) },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text(stringResource(id = R.string.date_format_hint), color = textColor) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = textColor,
+                    containerColor = Color.Transparent
+                )
             )
         }
     }
@@ -406,12 +441,13 @@ fun SettingsScreen(
         text = stringResource(id = R.string.input_settings_title),
         fontWeight = FontWeight.Bold,
         modifier = Modifier.fillMaxWidth(),
-        color = Color.Black
+        color = textColor
     )
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),
+        colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -420,7 +456,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     stringResource(id = R.string.auto_save_setting),
-                    color = Color.Black,
+                    color = textColor,
                     modifier = Modifier.weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -465,16 +501,23 @@ fun ClickableText(text: String, onClick: () -> Unit) {
 
 @Composable
 fun ShowInfoDialog(message: String, onDismiss: () -> Unit) {
+    val textColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(id = R.string.info_dialog_title)) },
-        text = { Text(message) },
+        title = { Text(stringResource(id = R.string.info_dialog_title), color = textColor) },
+        text = { Text(message, color = textColor) },
         confirmButton = {
             Button(
-                onClick = onDismiss
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color(0xFF616161) else Color(0xFF9E7CB2),
+                    contentColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.White
+                )
             ) {
                 Text(stringResource(id = R.string.ok))
             }
-        }
+        },
+        containerColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color(0xFF424242) else Color.White
     )
 }
