@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.appcompat.app.AppCompatDelegate
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,8 +47,8 @@ fun SettingsScreen(
     var expandedNotificationStyle by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
 
-    val textColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
-    val cardColors = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
+    val textColor = if (theme == "dark") Color.LightGray else Color.Black
+    val cardColors = if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
 
     // Общие настройки
     Text(
@@ -283,8 +282,8 @@ fun SettingsScreen(
                 onClick = onSelectFolder,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color(0xFF616161) else Color(0xFF9E7CB2),
-                    contentColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.White
+                    containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                    contentColor = if (theme == "dark") Color.LightGray else Color.White
                 )
             ) {
                 Text(stringResource(id = R.string.select_folder))
@@ -472,19 +471,19 @@ fun SettingsScreen(
         }
     }
     if (showAddNotesMethodsInfoDialog) {
-        ShowInfoDialog(stringResource(id = R.string.add_notes_methods_info)) {
+        ShowInfoDialog(stringResource(id = R.string.add_notes_methods_info), theme) {
             showAddNotesMethodsInfoDialog = false
         }
     }
 
     if (showSaveSettingsInfoDialog) {
-        ShowInfoDialog(stringResource(id = R.string.save_settings_info)) {
+        ShowInfoDialog(stringResource(id = R.string.save_settings_info), theme) {
             showSaveSettingsInfoDialog = false
         }
     }
 
     if (showOverlaySettingsInfoDialog) {
-        ShowInfoDialog(stringResource(id = R.string.overlay_permission_info)) {
+        ShowInfoDialog(stringResource(id = R.string.overlay_permission_info), theme) {
             showOverlaySettingsInfoDialog = false
         }
     }
@@ -500,8 +499,8 @@ fun ClickableText(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun ShowInfoDialog(message: String, onDismiss: () -> Unit) {
-    val textColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
+fun ShowInfoDialog(message: String, theme: String, onDismiss: () -> Unit) {
+    val textColor = if (theme == "dark") Color.LightGray else Color.Black
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -511,13 +510,13 @@ fun ShowInfoDialog(message: String, onDismiss: () -> Unit) {
             Button(
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color(0xFF616161) else Color(0xFF9E7CB2),
-                    contentColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.White
+                    containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                    contentColor = if (theme == "dark") Color.LightGray else Color.White
                 )
             ) {
                 Text(stringResource(id = R.string.ok))
             }
         },
-        containerColor = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color(0xFF424242) else Color.White
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }

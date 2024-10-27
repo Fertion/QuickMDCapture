@@ -298,6 +298,9 @@ fun MainScreen(
         }
     }
 
+    val textColor = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
+    val cardColors = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
+
     Surface(modifier = Modifier.fillMaxSize(), color = backgroundColor) {
         LazyColumn(
             modifier = Modifier
@@ -322,16 +325,17 @@ fun MainScreen(
                     text = stringResource(id = R.string.source_code_title),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
-                    color = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black
+                    color = textColor
                 )
                 OutlinedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp),
+                    colors = cardColors
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"), color = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black)
-                        Text(stringResource(id = R.string.latest_version, latestRelease?.tag_name ?: "Unknown"), color = if (theme == "dark" || AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) Color.LightGray else Color.Black)
+                        Text(stringResource(id = R.string.current_version, currentVersion ?: "Unknown"), color = textColor)
+                        Text(stringResource(id = R.string.latest_version, latestRelease?.tag_name ?: "Unknown"), color = textColor)
                         Spacer(modifier = Modifier.height(8.dp))
                         ClickableText(
                             text = stringResource(id = R.string.github_link),
