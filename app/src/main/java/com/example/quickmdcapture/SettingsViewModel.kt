@@ -6,6 +6,8 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -14,6 +16,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     private val sharedPreferences =
         application.getSharedPreferences("QuickMDCapture", Context.MODE_PRIVATE)
+    private val gson = Gson()
+
+    // Template-related state
+    private val _templates = MutableStateFlow<List<SaveTemplate>>(loadTemplates())
+    val templates: StateFlow<List<SaveTemplate>> = _templates
+
+    private val _selectedTemplateId = MutableStateFlow(
+        sharedPreferences.getString("SELECTED_TEMPLATE_ID", null)
+    )
+    val selectedTemplateId: StateFlow<String?> = _selectedTemplateId
+
+    private val selectedTemplate: SaveTemplate?
+        get() = templates.value.find { it.id == selectedTemplateId.value }
 
     private val _isShowNotificationEnabled =
         MutableStateFlow(sharedPreferences.getBoolean("SHOW_NOTIFICATION", true))
@@ -105,6 +120,19 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val theme: StateFlow<String> = _theme
 
     init {
+        // Initialize with default template if none exists
+        if (templates.value.isEmpty()) {
+            val defaultTemplate = SaveTemplate(
+                name = "Default",
+                isDefault = true
+            )
+            addTemplate(defaultTemplate)
+            selectTemplate(defaultTemplate.id)
+        }
+
+        // Load selected template settings
+        loadSelectedTemplateSettings()
+
         viewModelScope.launch {
             _selectedTheme.collect {
                 _theme.value = when (it) {
@@ -121,6 +149,110 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         return uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
     }
 
+    private fun loadTemplates(): List<SaveTemplate> {
+        val templatesJson = sharedPreferences.getString("TEMPLATES", null)
+        return if (templatesJson != null) {
+            val type = object : TypeToken<List<SaveTemplate>>() {}.type
+            gson.fromJson(templatesJson, type)
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun saveTemplates(templates: List<SaveTemplate>) {
+        sharedPreferences.edit()
+            .putString("TEMPLATES", gson.toJson(templates))
+            .apply()
+    }
+
+    private fun loadSelectedTemplateSettings() {
+        selectedTemplate?.let { template ->
+            _folderUri.value = template.folderUri
+            _noteDateTemplate.value = template.noteDateTemplate
+            _isListItemsEnabled.value = template.isListItemsEnabled
+            _isTimestampEnabled.value = template.isTimestampEnabled
+            _timestampTemplate.value = template.timestampTemplate
+            _isDateCreatedEnabled.value = template.isDateCreatedEnabled
+            _propertyName.value = template.propertyName
+            _dateCreatedTemplate.value = template.dateCreatedTemplate
+        }
+    }
+
+    fun addTemplate(template: SaveTemplate) {
+        viewModelScope.launch {
+            val updatedTemplates = templates.value.toMutableList()
+            if (template.isDefault) {
+                // Remove default flag from other templates
+                updatedTemplates.forEach { it.copy(isDefault = false) }
+            }
+            updatedTemplates.add(template)
+            _templates.value = updatedTemplates
+            saveTemplates(updatedTemplates)
+        }
+    }
+
+    fun updateTemplate(template: SaveTemplate) {
+        viewModelScope.launch {
+            val updatedTemplates = templates.value.map {
+                if (it.id == template.id) {
+                    if (template.isDefault) {
+                        // Remove default flag from other templates
+                        templates.value.forEach { other ->
+                            if (other.id != template.id) {
+                                other.copy(isDefault = false)
+                            }
+                        }
+                    }
+                    template
+                } else {
+                    if (template.isDefault) {
+                        it.copy(isDefault = false)
+                    } else {
+                        it
+                    }
+                }
+            }
+            _templates.value = updatedTemplates
+            saveTemplates(updatedTemplates)
+        }
+    }
+
+    fun deleteTemplate(templateId: String) {
+        viewModelScope.launch {
+            val templateToDelete = templates.value.find { it.id == templateId }
+            if (templateToDelete?.isDefault == true) {
+                // Don't allow deleting the default template
+                return@launch
+            }
+
+            val updatedTemplates = templates.value.filter { it.id != templateId }
+            _templates.value = updatedTemplates
+            saveTemplates(updatedTemplates)
+
+            if (selectedTemplateId.value == templateId) {
+                // Select the default template if the deleted template was selected
+                val defaultTemplate = updatedTemplates.find { it.isDefault }
+                defaultTemplate?.let { selectTemplate(it.id) }
+            }
+        }
+    }
+
+    fun selectTemplate(templateId: String) {
+        viewModelScope.launch {
+            _selectedTemplateId.value = templateId
+            sharedPreferences.edit()
+                .putString("SELECTED_TEMPLATE_ID", templateId)
+                .apply()
+            loadSelectedTemplateSettings()
+        }
+    }
+
+    fun setTemplateAsDefault(templateId: String) {
+        viewModelScope.launch {
+            val template = templates.value.find { it.id == templateId } ?: return@launch
+            updateTemplate(template.copy(isDefault = true))
+        }
+    }
 
     fun updateShowNotification(isEnabled: Boolean) {
         viewModelScope.launch {
@@ -139,21 +271,27 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun updateDateCreatedEnabled(isEnabled: Boolean) {
         viewModelScope.launch {
             _isDateCreatedEnabled.value = isEnabled
-            sharedPreferences.edit().putBoolean("SAVE_DATE_CREATED", isEnabled).apply()
+            selectedTemplate?.let { template ->
+                updateTemplate(template.copy(isDateCreatedEnabled = isEnabled))
+            }
         }
     }
 
     fun updatePropertyName(name: String) {
         viewModelScope.launch {
             _propertyName.value = name
-            sharedPreferences.edit().putString("PROPERTY_NAME", name).apply()
+            selectedTemplate?.let { template ->
+                updateTemplate(template.copy(propertyName = name))
+            }
         }
     }
 
     fun updateNoteDateTemplate(template: String) {
         viewModelScope.launch {
             _noteDateTemplate.value = template
-            sharedPreferences.edit().putString("NOTE_DATE_TEMPLATE", template).apply()
+            selectedTemplate?.let { currentTemplate ->
+                updateTemplate(currentTemplate.copy(noteDateTemplate = template))
+            }
         }
     }
 
@@ -167,7 +305,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun saveFolderUri(uri: String) {
         viewModelScope.launch {
             _folderUri.value = uri
-            sharedPreferences.edit().putString("FOLDER_URI", uri).apply()
+            selectedTemplate?.let { template ->
+                updateTemplate(template.copy(folderUri = uri))
+            }
         }
     }
 
@@ -181,28 +321,36 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun updateListItemsEnabled(isEnabled: Boolean) {
         viewModelScope.launch {
             _isListItemsEnabled.value = isEnabled
-            sharedPreferences.edit().putBoolean("LIST_ITEMS_ENABLED", isEnabled).apply()
+            selectedTemplate?.let { template ->
+                updateTemplate(template.copy(isListItemsEnabled = isEnabled))
+            }
         }
     }
 
     fun updateTimestampEnabled(isEnabled: Boolean) {
         viewModelScope.launch {
             _isTimestampEnabled.value = isEnabled
-            sharedPreferences.edit().putBoolean("TIMESTAMP_ENABLED", isEnabled).apply()
+            selectedTemplate?.let { template ->
+                updateTemplate(template.copy(isTimestampEnabled = isEnabled))
+            }
         }
     }
 
     fun updateTimestampTemplate(template: String) {
         viewModelScope.launch {
             _timestampTemplate.value = template
-            sharedPreferences.edit().putString("TIMESTAMP_TEMPLATE", template).apply()
+            selectedTemplate?.let { currentTemplate ->
+                updateTemplate(currentTemplate.copy(timestampTemplate = template))
+            }
         }
     }
 
     fun updateDateCreatedTemplate(template: String) {
         viewModelScope.launch {
             _dateCreatedTemplate.value = template
-            sharedPreferences.edit().putString("DATE_CREATED_TEMPLATE", template).apply()
+            selectedTemplate?.let { currentTemplate ->
+                updateTemplate(currentTemplate.copy(dateCreatedTemplate = template))
+            }
         }
     }
 

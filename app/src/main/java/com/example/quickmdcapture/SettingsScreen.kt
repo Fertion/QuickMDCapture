@@ -5,7 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import java.util.*
 
@@ -43,6 +50,17 @@ fun SettingsScreen(
     val selectedTheme by settingsViewModel.selectedTheme.collectAsState()
     val theme by settingsViewModel.theme.collectAsState()
 
+    // Template management state
+    var showAddTemplateDialog by remember { mutableStateOf(false) }
+    var showRenameTemplateDialog by remember { mutableStateOf(false) }
+    var showDeleteTemplateDialog by remember { mutableStateOf(false) }
+    var newTemplateName by remember { mutableStateOf(TextFieldValue("")) }
+    var selectedTemplateForRename by remember { mutableStateOf<SaveTemplate?>(null) }
+    var selectedTemplateForDelete by remember { mutableStateOf<SaveTemplate?>(null) }
+
+    val templates by settingsViewModel.templates.collectAsState()
+    val selectedTemplateId by settingsViewModel.selectedTemplateId.collectAsState()
+    var expandedTemplates by remember { mutableStateOf(false) }
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
     var showSaveSettingsInfoDialog by remember { mutableStateOf(false) }
@@ -279,20 +297,12 @@ fun SettingsScreen(
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = stringResource(id = R.string.save_settings_title),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f),
-            color = textColor
-        )
-        IconButton(onClick = { showSaveSettingsInfoDialog = true }) {
-            Icon(Icons.Filled.Info, contentDescription = "Info", tint = textColor)
-        }
-    }
+    Text(
+        text = stringResource(id = R.string.save_settings_title),
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.fillMaxWidth(),
+        color = textColor
+    )
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -300,6 +310,137 @@ fun SettingsScreen(
         colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // Template Selection
+            Text(
+                text = stringResource(id = R.string.templates_title),
+                color = textColor,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            ExposedDropdownMenuBox(
+                expanded = expandedTemplates,
+                onExpandedChange = { expandedTemplates = it }
+            ) {
+                TextField(
+                    value = templates.find { it.id == selectedTemplateId }?.name ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTemplates)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedTemplates,
+                    onDismissRequest = { expandedTemplates = false },
+                    modifier = Modifier.background(dropdownMenuBackgroundColor)
+                ) {
+                    templates.forEach { template ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        imageVector = if (template.isDefault) Icons.Default.Star else Icons.Default.FavoriteBorder,
+                                        contentDescription = if (template.isDefault) stringResource(id = R.string.default_template) else stringResource(id = R.string.set_as_default),
+                                        tint = textColor,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(template.name, color = textColor)
+                                }
+                            },
+                            onClick = {
+                                settingsViewModel.selectTemplate(template.id)
+                                expandedTemplates = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Default Template Checkbox
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = templates.find { it.id == selectedTemplateId }?.isDefault == true,
+                    onCheckedChange = { isChecked ->
+                        if (isChecked) {
+                            settingsViewModel.setTemplateAsDefault(selectedTemplateId ?: return@Checkbox)
+                        }
+                    },
+                    enabled = templates.find { it.id == selectedTemplateId }?.isDefault != true
+                )
+                Text(
+                    text = stringResource(id = R.string.set_as_default),
+                    color = textColor,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Template Management Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = { showAddTemplateDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    ),
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.add_template))
+                }
+
+                Button(
+                    onClick = {
+                        selectedTemplateForRename = templates.find { it.id == selectedTemplateId }
+                        showRenameTemplateDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    ),
+                    modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(id = R.string.rename_template))
+                }
+
+                Button(
+                    onClick = {
+                        selectedTemplateForDelete = templates.find { it.id == selectedTemplateId }
+                        showDeleteTemplateDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    ),
+                    enabled = templates.find { it.id == selectedTemplateId }?.isDefault != true,
+                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.delete_template))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = onSelectFolder,
                 modifier = Modifier.fillMaxWidth(),
@@ -508,6 +649,160 @@ fun SettingsScreen(
         ShowInfoDialog(stringResource(id = R.string.overlay_permission_info), theme) {
             showOverlaySettingsInfoDialog = false
         }
+    }
+
+    // Template Management Dialogs
+    if (showAddTemplateDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddTemplateDialog = false },
+            title = { Text(stringResource(id = R.string.add_template_dialog_title), color = textColor) },
+            text = {
+                TextField(
+                    value = newTemplateName,
+                    onValueChange = { newTemplateName = it },
+                    label = { Text(stringResource(id = R.string.template_name_hint), color = textColor) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newTemplateName.text.isNotBlank()) {
+                            settingsViewModel.addTemplate(
+                                SaveTemplate(
+                                    name = newTemplateName.text,
+                                    isDefault = templates.isEmpty()
+                                )
+                            )
+                            newTemplateName = TextFieldValue("")
+                            showAddTemplateDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    )
+                ) {
+                    Text(stringResource(id = R.string.add))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        newTemplateName = TextFieldValue("")
+                        showAddTemplateDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    )
+                ) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    if (showRenameTemplateDialog) {
+        AlertDialog(
+            onDismissRequest = { showRenameTemplateDialog = false },
+            title = { Text(stringResource(id = R.string.rename_template_dialog_title), color = textColor) },
+            text = {
+                TextField(
+                    value = newTemplateName,
+                    onValueChange = { newTemplateName = it },
+                    label = { Text(stringResource(id = R.string.template_name_hint), color = textColor) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newTemplateName.text.isNotBlank()) {
+                            selectedTemplateForRename?.let { template ->
+                                settingsViewModel.updateTemplate(
+                                    template.copy(name = newTemplateName.text)
+                                )
+                            }
+                            newTemplateName = TextFieldValue("")
+                            showRenameTemplateDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    )
+                ) {
+                    Text(stringResource(id = R.string.rename))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        newTemplateName = TextFieldValue("")
+                        showRenameTemplateDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    )
+                ) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    if (showDeleteTemplateDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteTemplateDialog = false },
+            title = { Text(stringResource(id = R.string.delete_template_dialog_title), color = textColor) },
+            text = {
+                Text(
+                    stringResource(
+                        id = R.string.delete_template_dialog_message,
+                        selectedTemplateForDelete?.name ?: ""
+                    ),
+                    color = textColor
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        selectedTemplateForDelete?.let { template ->
+                            settingsViewModel.deleteTemplate(template.id)
+                        }
+                        showDeleteTemplateDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    )
+                ) {
+                    Text(stringResource(id = R.string.delete))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDeleteTemplateDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (theme == "dark") Color(0xFF616161) else Color(0xFF9E7CB2),
+                        contentColor = if (theme == "dark") Color.LightGray else Color.White
+                    )
+                ) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }
 
