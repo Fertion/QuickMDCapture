@@ -310,9 +310,10 @@ fun SettingsScreen(
         colors = cardColors
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Template Selection
+            // Templates Section
             Text(
                 text = stringResource(id = R.string.templates_title),
+                fontWeight = FontWeight.Bold,
                 color = textColor,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -439,7 +440,16 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Save Location Section
+            Text(
+                text = "Место сохранения",
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = onSelectFolder,
@@ -451,7 +461,7 @@ fun SettingsScreen(
             ) {
                 Text(stringResource(id = R.string.select_folder))
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(
                     id = R.string.folder_selected,
@@ -462,7 +472,17 @@ fun SettingsScreen(
                 overflow = TextOverflow.Visible,
                 maxLines = 2
             )
-            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // File Format Section
+            Text(
+                text = "Формат файла",
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             TextField(
                 value = noteDateTemplate,
@@ -530,22 +550,18 @@ fun SettingsScreen(
                     containerColor = Color.Transparent
                 )
             )
-        }
-    }
-    Spacer(modifier = Modifier.height(16.dp))
-    Text(
-        text = stringResource(id = R.string.yaml_settings_title),
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth(),
-        color = textColor
-    )
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
-        colors = cardColors
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // YAML Properties Section
+            Text(
+                text = stringResource(id = R.string.yaml_settings_title),
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -599,6 +615,8 @@ fun SettingsScreen(
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
+
+    // Input Settings Section
     Text(
         text = stringResource(id = R.string.input_settings_title),
         fontWeight = FontWeight.Bold,
@@ -633,6 +651,7 @@ fun SettingsScreen(
             }
         }
     }
+
     if (showAddNotesMethodsInfoDialog) {
         ShowInfoDialog(stringResource(id = R.string.add_notes_methods_info), theme) {
             showAddNotesMethodsInfoDialog = false
@@ -703,7 +722,7 @@ fun SettingsScreen(
                     Text(stringResource(id = R.string.cancel))
                 }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (theme == "dark") Color(0xFF424242) else Color.White
         )
     }
 
@@ -757,7 +776,7 @@ fun SettingsScreen(
                     Text(stringResource(id = R.string.cancel))
                 }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (theme == "dark") Color(0xFF424242) else Color.White
         )
     }
 
@@ -801,7 +820,7 @@ fun SettingsScreen(
                     Text(stringResource(id = R.string.cancel))
                 }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (theme == "dark") Color(0xFF424242) else Color.White
         )
     }
 }
@@ -834,6 +853,6 @@ fun ShowInfoDialog(message: String, theme: String, onDismiss: () -> Unit) {
                 Text(stringResource(id = R.string.ok))
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = if (theme == "dark") Color(0xFF424242) else Color.White
     )
 }
