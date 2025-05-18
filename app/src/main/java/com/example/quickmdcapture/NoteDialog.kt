@@ -17,11 +17,7 @@ import android.text.TextWatcher
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -41,6 +37,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     private val etNote by lazy { findViewById<EditText>(R.id.etNote) }
     private val btnSpeech by lazy { findViewById<ImageButton>(R.id.btnSpeech) }
     private val btnRestore by lazy { findViewById<ImageButton>(R.id.btnRestore) }
+    private val templateSpinner by lazy { findViewById<Spinner>(R.id.templateSpinner) }
     private var lastPartialTextLength = 0
     private val handler = Handler(Looper.getMainLooper())
 
@@ -66,6 +63,33 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         val btnSave = findViewById<Button>(R.id.btnSave)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
+
+        // Setup template spinner
+        val templates = settingsViewModel.templates.value
+        val adapter = ArrayAdapter(
+            context,
+            android.R.layout.simple_spinner_item,
+            templates.map { it.name }
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        templateSpinner.adapter = adapter
+        
+        // Set initial selection to default template
+        val defaultTemplateIndex = templates.indexOfFirst { it.isDefault }
+        if (defaultTemplateIndex != -1) {
+            templateSpinner.setSelection(defaultTemplateIndex)
+            settingsViewModel.selectTemplate(templates[defaultTemplateIndex].id)
+        }
+
+        templateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                val selectedTemplate = templates[position]
+                settingsViewModel.selectTemplate(selectedTemplate.id)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         btnRestore.visibility = if (settingsViewModel.previousText.value.isNotEmpty()) {
             ImageButton.VISIBLE
@@ -188,6 +212,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 btnSpeech.background = buttonBackground
                 btnRestore.background = buttonBackground
                 btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
+                templateSpinner.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+                templateSpinner.setPopupBackgroundResource(R.drawable.rounded_dialog_background)
             }
             "dark" -> {
                 dialogLayout.setBackgroundResource(R.drawable.rounded_dialog_background_dark)
@@ -198,6 +224,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                 val micDrawable = ContextCompat.getDrawable(context, R.drawable.ic_mic)
                 DrawableCompat.setTint(micDrawable!!, ContextCompat.getColor(context, R.color.light_gray))
                 btnSpeech.setImageDrawable(micDrawable)
+                templateSpinner.setBackgroundColor(ContextCompat.getColor(context, R.color.dark_gray))
+                templateSpinner.setPopupBackgroundResource(R.drawable.rounded_dialog_background_dark)
 
                 // Изменение цвета каемки кнопки
                 if (buttonBackground != null) {
@@ -218,6 +246,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                         val micDrawable = ContextCompat.getDrawable(context, R.drawable.ic_mic)
                         DrawableCompat.setTint(micDrawable!!, ContextCompat.getColor(context, R.color.light_gray))
                         btnSpeech.setImageDrawable(micDrawable)
+                        templateSpinner.setBackgroundColor(ContextCompat.getColor(context, R.color.dark_gray))
+                        templateSpinner.setPopupBackgroundResource(R.drawable.rounded_dialog_background_dark)
 
                         // Изменение цвета каемки кнопки
                         if (buttonBackground != null) {
@@ -234,6 +264,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                         btnSpeech.background = buttonBackground
                         btnRestore.background = buttonBackground
                         btnSpeech.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mic))
+                        templateSpinner.setBackgroundColor(ContextCompat.getColor(context, R.color.white))
+                        templateSpinner.setPopupBackgroundResource(R.drawable.rounded_dialog_background)
                     }
                 }
             }

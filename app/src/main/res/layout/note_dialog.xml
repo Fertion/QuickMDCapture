@@ -7,6 +7,14 @@
     android:padding="16dp"
     android:background="@drawable/rounded_dialog_background">
 
+    <Spinner
+        android:id="@+id/templateSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_button_background"
+        android:padding="8dp" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
