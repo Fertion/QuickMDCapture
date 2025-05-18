@@ -76,6 +76,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val isListItemsEnabled: StateFlow<Boolean> = _isListItemsEnabled
 
+    private val _listItemIndentLevel = MutableStateFlow(
+        sharedPreferences.getInt("LIST_ITEM_INDENT_LEVEL", 0)
+    )
+    val listItemIndentLevel: StateFlow<Int> = _listItemIndentLevel
+
     private val _isTimestampEnabled = MutableStateFlow(
         sharedPreferences.getBoolean("TIMESTAMP_ENABLED", false)
     )
@@ -170,6 +175,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _folderUri.value = template.folderUri
             _noteDateTemplate.value = template.noteDateTemplate
             _isListItemsEnabled.value = template.isListItemsEnabled
+            _listItemIndentLevel.value = template.listItemIndentLevel
             _isTimestampEnabled.value = template.isTimestampEnabled
             _timestampTemplate.value = template.timestampTemplate
             _isDateCreatedEnabled.value = template.isDateCreatedEnabled
@@ -323,6 +329,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _isListItemsEnabled.value = isEnabled
             selectedTemplate?.let { template ->
                 updateTemplate(template.copy(isListItemsEnabled = isEnabled))
+            }
+        }
+    }
+
+    fun updateListItemIndentLevel(level: Int) {
+        viewModelScope.launch {
+            _listItemIndentLevel.value = level
+            sharedPreferences.edit().putInt("LIST_ITEM_INDENT_LEVEL", level).apply()
+            selectedTemplate?.let { template ->
+                updateTemplate(template.copy(listItemIndentLevel = level))
             }
         }
     }

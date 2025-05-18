@@ -136,6 +136,7 @@ class ShareHandlerActivity : AppCompatActivity() {
         val propertyName = settingsViewModel.propertyName.value
         val noteDateTemplate = settingsViewModel.noteDateTemplate.value
         val isListItemsEnabled = settingsViewModel.isListItemsEnabled.value
+        val listItemIndentLevel = settingsViewModel.listItemIndentLevel.value
         val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
         val timestampTemplate = settingsViewModel.timestampTemplate.value
         val dateCreatedTemplate = settingsViewModel.dateCreatedTemplate.value
@@ -150,7 +151,9 @@ class ShareHandlerActivity : AppCompatActivity() {
             contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
                 var textToWrite = text
                 if (isListItemsEnabled) {
-                    textToWrite = textToWrite.split("\n").joinToString("\n") { "- $it" }
+                    textToWrite = textToWrite.split("\n").joinToString("\n") { 
+                        "\t".repeat(listItemIndentLevel) + "- $it" 
+                    }
                 }
                 if (isTimestampEnabled) {
                     textToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$textToWrite"
@@ -164,7 +167,9 @@ class ShareHandlerActivity : AppCompatActivity() {
                 contentResolver.openOutputStream(newFile.uri)?.use { outputStream ->
                     var dataToWrite = text
                     if (isListItemsEnabled) {
-                        dataToWrite = dataToWrite.split("\n").joinToString("\n") { "- $it" }
+                        dataToWrite = dataToWrite.split("\n").joinToString("\n") { 
+                            "\t".repeat(listItemIndentLevel) + "- $it" 
+                        }
                     }
                     if (isTimestampEnabled) {
                         dataToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$dataToWrite"

@@ -7,6 +7,7 @@ data class SaveTemplate(
     val folderUri: String = "",
     val noteDateTemplate: String = "{{yyyy.MM.dd HH_mm_ss}}",
     val isListItemsEnabled: Boolean = false,
+    val listItemIndentLevel: Int = 0,
     val isTimestampEnabled: Boolean = false,
     val timestampTemplate: String = "# {{yyyy.MM.dd HH:mm:ss}}",
     val isDateCreatedEnabled: Boolean = false,

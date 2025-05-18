@@ -517,6 +517,64 @@ fun SettingsScreen(
                 )
             }
 
+            if (isListItemsEnabled) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        stringResource(id = R.string.list_item_indent_level),
+                        color = textColor,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    var expanded by remember { mutableStateOf(false) }
+                    val indentLevels = listOf(0, 1, 2, 3, 4, 5)
+                    val currentIndentLevel = settingsViewModel.listItemIndentLevel.collectAsState().value
+
+                    Box {
+                        OutlinedButton(
+                            onClick = { expanded = true },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = textColor
+                            )
+                        ) {
+                            Text(
+                                when (currentIndentLevel) {
+                                    0 -> stringResource(id = R.string.no_indent)
+                                    else -> stringResource(id = R.string.indent_level, currentIndentLevel)
+                                }
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            indentLevels.forEach { level ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            when (level) {
+                                                0 -> stringResource(id = R.string.no_indent)
+                                                else -> stringResource(id = R.string.indent_level, level)
+                                            },
+                                            color = textColor
+                                        )
+                                    },
+                                    onClick = {
+                                        settingsViewModel.updateListItemIndentLevel(level)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()

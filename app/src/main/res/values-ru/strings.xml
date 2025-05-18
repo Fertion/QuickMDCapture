@@ -49,6 +49,9 @@
     <string name="notification_style_expanded_with_buttons_1">Расширенный с кнопками 1</string>
     <string name="filename_template_hint">Шаблон имени файла (заключите шаблоны форматирования даты и времени в двойные фигурные скобки: {{ }})</string>
     <string name="save_as_list_items">Сохранять как элементы списка</string>
+    <string name="list_item_indent_level">Отступ элементов списка</string>
+    <string name="no_indent">Без отступа</string>
+    <string name="indent_level">%d отступов</string>
     <string name="add_timestamp">Добавлять временную метку перед текстом</string>
     <string name="timestamp_template_hint">Шаблон временной метки (заключите шаблоны форматирования даты и времени в двойные фигурные скобки: {{ }})</string>
     <string name="microphone_permission_denied">Для использования голосового ввода необходимо разрешить доступ к микрофону</string>
