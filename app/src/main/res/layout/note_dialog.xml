@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:background="@drawable/rounded_button_background"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:gravity="center" />
 
     <ScrollView
         android:layout_width="match_parent"
