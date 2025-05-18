@@ -27,7 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.platform.LocalDensity
 import java.util.*
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,9 +41,11 @@ fun SettingsScreen(
     onSelectFolder: () -> Unit,
     settingsViewModel: SettingsViewModel,
     checkNotificationPermission: () -> Unit,
-    showOverlayPermissionWarningDialog: () -> Unit
+    showOverlayPermissionWarningDialog: () -> Unit,
+    isScrolling: Boolean
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     val isShowNotificationEnabled by settingsViewModel.isShowNotificationEnabled.collectAsState()
     val isShowOverlockScreenDialog by settingsViewModel.isShowOverlockScreenDialog.collectAsState()
@@ -77,6 +85,19 @@ fun SettingsScreen(
         if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
     val dropdownMenuBackgroundColor = if (theme == "dark") Color(0xFF424242) else Color.White
 
+    // Add debounced scrolling state
+    var debouncedIsScrolling by remember { mutableStateOf(false) }
+    
+    // Update debounced scrolling state with delay
+    LaunchedEffect(isScrolling) {
+        if (isScrolling) {
+            debouncedIsScrolling = true
+        } else {
+            delay(300) // Increased delay to prevent accidental taps
+            debouncedIsScrolling = false
+        }
+    }
+
     // Общие настройки
     Text(
         text = stringResource(id = R.string.general_settings_title),
@@ -101,7 +122,11 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 ExposedDropdownMenuBox(
                     expanded = expandedTheme,
-                    onExpandedChange = { expandedTheme = it }
+                    onExpandedChange = { newExpanded ->
+                        if (!debouncedIsScrolling) {
+                            expandedTheme = newExpanded
+                        }
+                    }
                 ) {
                     TextField(
                         value = when (selectedTheme) {
@@ -213,7 +238,11 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 ExposedDropdownMenuBox(
                     expanded = expandedNotificationStyle,
-                    onExpandedChange = { expandedNotificationStyle = it }
+                    onExpandedChange = { newExpanded ->
+                        if (!debouncedIsScrolling) {
+                            expandedNotificationStyle = newExpanded
+                        }
+                    }
                 ) {
                     TextField(
                         value = when (notificationStyle) {
@@ -325,7 +354,11 @@ fun SettingsScreen(
             
             ExposedDropdownMenuBox(
                 expanded = expandedTemplates,
-                onExpandedChange = { expandedTemplates = it }
+                onExpandedChange = { newExpanded ->
+                    if (!debouncedIsScrolling) {
+                        expandedTemplates = newExpanded
+                    }
+                }
             ) {
                 TextField(
                     value = templates.find { it.id == selectedTemplateId }?.name ?: "",

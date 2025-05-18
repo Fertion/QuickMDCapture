@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -250,6 +252,21 @@ fun MainScreen(
     var currentVersion by remember { mutableStateOf<String?>(null) }
     val theme by settingsViewModel.theme.collectAsState()
 
+    // Add scroll state for the entire screen
+    val scrollState = rememberLazyListState()
+    
+    // Track scrolling state with debounce
+    var isScrolling by remember { mutableStateOf(false) }
+    
+    // Update scrolling state based on LazyColumn scroll with debounce
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        isScrolling = scrollState.isScrollInProgress
+        if (!scrollState.isScrollInProgress) {
+            // Add 100ms debounce after scrolling ends
+            delay(100)
+            isScrolling = false
+        }
+    }
 
     fun checkLatestRelease() {
         coroutineScope.launch {
@@ -302,14 +319,16 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Top,
+            state = scrollState
         ) {
             item {
                 SettingsScreen(
                     onSelectFolder = onSelectFolder,
                     settingsViewModel = settingsViewModel,
                     checkNotificationPermission = checkNotificationPermission,
-                    showOverlayPermissionWarningDialog = showOverlayPermissionWarningDialog
+                    showOverlayPermissionWarningDialog = showOverlayPermissionWarningDialog,
+                    isScrolling = isScrolling
                 )
             }
 
