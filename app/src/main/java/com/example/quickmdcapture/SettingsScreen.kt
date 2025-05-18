@@ -1,6 +1,7 @@
 package com.example.quickmdcapture
 
 import android.content.Intent
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -413,6 +417,7 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         selectedTemplateForRename = templates.find { it.id == selectedTemplateId }
+                        newTemplateName = TextFieldValue(selectedTemplateForRename?.name ?: "")
                         showRenameTemplateDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -730,6 +735,10 @@ fun SettingsScreen(
 
     // Template Management Dialogs
     if (showAddTemplateDialog) {
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
         AlertDialog(
             onDismissRequest = { showAddTemplateDialog = false },
             title = { Text(stringResource(id = R.string.add_template_dialog_title), color = textColor) },
@@ -741,7 +750,8 @@ fun SettingsScreen(
                     colors = TextFieldDefaults.textFieldColors(
                         textColor = textColor,
                         containerColor = Color.Transparent
-                    )
+                    ),
+                    modifier = Modifier.focusRequester(focusRequester)
                 )
             },
             confirmButton = {
@@ -785,6 +795,10 @@ fun SettingsScreen(
     }
 
     if (showRenameTemplateDialog) {
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
         AlertDialog(
             onDismissRequest = { showRenameTemplateDialog = false },
             title = { Text(stringResource(id = R.string.rename_template_dialog_title), color = textColor) },
@@ -796,7 +810,8 @@ fun SettingsScreen(
                     colors = TextFieldDefaults.textFieldColors(
                         textColor = textColor,
                         containerColor = Color.Transparent
-                    )
+                    ),
+                    modifier = Modifier.focusRequester(focusRequester)
                 )
             },
             confirmButton = {
