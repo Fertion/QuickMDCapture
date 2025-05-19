@@ -51,7 +51,7 @@
     <string name="save_as_list_items">Save as list items</string>
     <string name="list_item_indent_level">List item indentation</string>
     <string name="no_indent">No indent</string>
-    <string name="indent_level">%d spaces</string>
+    <string name="indent_level">Indent %d</string>
     <string name="add_timestamp">Add timestamp before text</string>
     <string name="timestamp_template_hint">Timestamp template (put date and time formatting patterns inside double curly braces: {{ }})</string>
     <string name="microphone_permission_denied">To use voice input, you need to allow access to the microphone</string>
