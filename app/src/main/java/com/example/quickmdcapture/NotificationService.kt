@@ -33,10 +33,14 @@ class NotificationService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.app_name)
             val descriptionText = getString(R.string.add_note_notification_text)
-            val importance = NotificationManager.IMPORTANCE_LOW
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
                 setShowBadge(false)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                enableLights(false)
+                enableVibration(false)
+                setSound(null, null)
             }
             val notificationManager: NotificationManager =
                 getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -74,6 +78,12 @@ class NotificationService : Service() {
             .setOngoing(true)
             .setSilent(true)
             .setShowWhen(false)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setFullScreenIntent(pendingIntent, true)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setSound(null)
+            .setVibrate(null)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder.setChannelId(CHANNEL_ID)
