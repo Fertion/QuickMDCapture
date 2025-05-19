@@ -67,4 +67,18 @@
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="theme_system">Системная</string>
+    <string name="templates_title">Шаблоны сохранения</string>
+    <string name="add_template">Добавить шаблон</string>
+    <string name="rename_template">Переименовать шаблон</string>
+    <string name="delete_template">Удалить шаблон</string>
+    <string name="add_template_dialog_title">Добавить новый шаблон</string>
+    <string name="rename_template_dialog_title">Переименовать шаблон</string>
+    <string name="delete_template_dialog_title">Удалить шаблон</string>
+    <string name="delete_template_dialog_message">Вы уверены, что хотите удалить шаблон \"%1$s\"?</string>
+    <string name="template_name_hint">Название шаблона</string>
+    <string name="add">Добавить</string>
+    <string name="rename">Переименовать</string>
+    <string name="delete">Удалить</string>
+    <string name="set_as_default">Установить по умолчанию</string>
+    <string name="default_template">Шаблон по умолчанию</string>
 </resources>

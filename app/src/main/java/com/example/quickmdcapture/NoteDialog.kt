@@ -405,6 +405,15 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     content.append(note)
                 }
 
+                // Add YAML header with creation date if enabled
+                if (settingsViewModel.isDateCreatedEnabled.value) {
+                    val fullTimeStamp = settingsViewModel.dateCreatedTemplate.value
+                        .replace("{{yyyy.MM.dd}}", SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Date()))
+                        .replace("{{HH:mm:ssZ}}", SimpleDateFormat("HH:mm:ssZ", Locale.getDefault()).format(Date()))
+                    val yamlHeader = "---\n${settingsViewModel.propertyName.value}: $fullTimeStamp\n---\n"
+                    content.insert(0, yamlHeader)
+                }
+
                 context.contentResolver.openOutputStream(file.uri)?.use { outputStream ->
                     outputStream.write(content.toString().toByteArray())
                 }

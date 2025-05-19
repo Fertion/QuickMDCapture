@@ -45,7 +45,6 @@ fun SettingsScreen(
     isScrolling: Boolean
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
 
     val isShowNotificationEnabled by settingsViewModel.isShowNotificationEnabled.collectAsState()
     val isShowOverlockScreenDialog by settingsViewModel.isShowOverlockScreenDialog.collectAsState()
