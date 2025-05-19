@@ -416,6 +416,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     outputStream.write(content.toString().toByteArray())
                 }
 
+                settingsViewModel.clearCurrentText()
+                settingsViewModel.clearPreviousText()
                 Toast.makeText(context, R.string.note_saved, Toast.LENGTH_SHORT).show()
                 dismiss()
             } catch (e: Exception) {
@@ -433,6 +435,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         handler.postDelayed({
             if (message == context.getString(R.string.note_saved) || message == context.getString(R.string.note_appended)) {
                 settingsViewModel.clearCurrentText()
+                settingsViewModel.clearPreviousText()
             } else {
                 settingsViewModel.updateCurrentText(settingsViewModel.tempText.value)
             }

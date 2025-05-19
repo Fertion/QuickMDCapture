@@ -403,15 +403,17 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun clearCurrentText() {
-        updateCurrentText("")
+        _currentText.value = ""
+        sharedPreferences.edit().remove("CURRENT_TEXT").apply()
     }
 
     fun clearPreviousText() {
-        updatePreviousText("")
+        _previousText.value = ""
+        sharedPreferences.edit().remove("PREVIOUS_TEXT").apply()
     }
 
     fun clearTempText() {
-        updateTempText("")
+        _tempText.value = ""
     }
 
     fun updateTheme(theme: String) {
