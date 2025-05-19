@@ -346,116 +346,76 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
     }
 
     private fun saveNote(note: String) {
-        val folderUriString = settingsViewModel.folderUri.value
-        val propertyName = settingsViewModel.propertyName.value
-        val noteDateTemplate = settingsViewModel.noteDateTemplate.value
-        val isDateCreatedEnabled = settingsViewModel.isDateCreatedEnabled.value
-        val isListItemsEnabled = settingsViewModel.isListItemsEnabled.value
-        val listItemIndentLevel = settingsViewModel.listItemIndentLevel.value
-        val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
-        val timestampTemplate = settingsViewModel.timestampTemplate.value
-        val dateCreatedTemplate = settingsViewModel.dateCreatedTemplate.value
-
-        if (folderUriString == context.getString(R.string.folder_not_selected)) {
-            if (isScreenLocked()) {
-                dismissWithMessage(context.getString(R.string.folder_not_selected))
-            } else {
-                Toast.makeText(context, context.getString(R.string.folder_not_selected), Toast.LENGTH_SHORT)
-                    .show()
-                dismiss()
-            }
+        if (note.isBlank()) {
+            Toast.makeText(context, R.string.note_error, Toast.LENGTH_SHORT).show()
             return
         }
 
-        try {
-            val folderUri = Uri.parse(folderUriString)
-            val contentResolver = context.contentResolver
+        val folderUri = settingsViewModel.folderUri.value
+        if (folderUri == context.getString(R.string.folder_not_selected)) {
+            Toast.makeText(context, R.string.folder_not_selected, Toast.LENGTH_SHORT).show()
+            return
+        }
 
-            val fileName = getFileNameWithDate(noteDateTemplate)
+        val folder = DocumentFile.fromTreeUri(context, Uri.parse(folderUri))
+        if (folder == null || !folder.exists() || !folder.canWrite()) {
+            Toast.makeText(context, R.string.error_selecting_folder, Toast.LENGTH_SHORT).show()
+            return
+        }
 
-            val documentFile = DocumentFile.fromTreeUri(context, folderUri)
-            if (documentFile == null || !documentFile.canWrite()) {
-                if (isScreenLocked()) {
-                    dismissWithMessage(context.getString(R.string.note_error))
-                } else {
-                    Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
-                        .show()
-                    dismiss()
-                }
-                return
+        val dateFormat = SimpleDateFormat("yyyy.MM.dd HH_mm_ss", Locale.getDefault())
+        val currentDate = dateFormat.format(Date())
+
+        // Формируем имя файла
+        var filename = settingsViewModel.noteDateTemplate.value
+            .replace("{{yyyy.MM.dd HH_mm_ss}}", currentDate)
+
+        // Добавляем начало текста заметки в имя файла, если включено
+        if (settingsViewModel.isNoteTextInFilenameEnabled.value) {
+            val noteText = note.take(settingsViewModel.noteTextInFilenameLength.value)
+                .replace(Regex("[<>:\"/\\|?*]"), "_") // Заменяем недопустимые символы
+                .trim()
+            if (noteText.isNotEmpty()) {
+                filename = "$filename - $noteText"
             }
+        }
 
-            val existingFile = documentFile.findFile(fileName)
-            if (existingFile != null) {
-                contentResolver.openOutputStream(existingFile.uri, "wa")?.use { outputStream ->
-                    var textToWrite = note
-                    if (isListItemsEnabled) {
-                        textToWrite = textToWrite.split("\n").joinToString("\n") { 
-                            "\t".repeat(listItemIndentLevel) + "- $it" 
-                        }
-                    }
-                    if (isTimestampEnabled) {
-                        textToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$textToWrite"
-                    }
-                    outputStream.write("\n$textToWrite".toByteArray())
+        filename = "$filename.md"
+
+        var file = folder.findFile(filename)
+        if (file == null) {
+            file = folder.createFile("text/markdown", filename)
+        }
+
+        if (file != null) {
+            try {
+                val content = StringBuilder()
+                if (settingsViewModel.isTimestampEnabled.value) {
+                    val timestamp = settingsViewModel.timestampTemplate.value
+                        .replace("{{yyyy.MM.dd HH:mm:ss}}", SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date()))
+                    content.append(timestamp).append("\n")
                 }
-                if (isScreenLocked()) {
-                    settingsViewModel.updateTempText(note)
-                    dismissWithMessage(context.getString(R.string.note_appended))
-                } else {
-                    Toast.makeText(context, context.getString(R.string.note_appended), Toast.LENGTH_SHORT)
-                        .show()
-                    settingsViewModel.clearCurrentText()
-                    settingsViewModel.clearPreviousText()
-                    dismiss()
-                }
-            } else {
-                val fileDoc = documentFile.createFile("text/markdown", fileName)
-                if (fileDoc != null) {
-                    contentResolver.openOutputStream(fileDoc.uri)?.use { outputStream ->
-                        var dataToWrite = note
-                        if (isListItemsEnabled) {
-                            dataToWrite = dataToWrite.split("\n").joinToString("\n") { 
-                                "\t".repeat(listItemIndentLevel) + "- $it" 
-                            }
-                        }
-                        if (isTimestampEnabled) {
-                            dataToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$dataToWrite"
-                        }
-                        if (isDateCreatedEnabled) {
-                            val fullTimeStamp = getFormattedTimestamp(dateCreatedTemplate)
-                            dataToWrite = "---\n$propertyName: $fullTimeStamp\n---\n$dataToWrite"
-                        }
-                        outputStream.write(dataToWrite.toByteArray())
-                    }
-                    if (isScreenLocked()) {
-                        settingsViewModel.updateTempText(note)
-                        dismissWithMessage(context.getString(R.string.note_saved))
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.note_saved), Toast.LENGTH_SHORT)
-                            .show()
-                        settingsViewModel.clearCurrentText()
-                        settingsViewModel.clearPreviousText()
-                        dismiss()
+
+                if (settingsViewModel.isListItemsEnabled.value) {
+                    val indent = "  ".repeat(settingsViewModel.listItemIndentLevel.value)
+                    note.lines().forEach { line ->
+                        content.append(indent).append("- ").append(line).append("\n")
                     }
                 } else {
-                    if (isScreenLocked()) {
-                        dismissWithMessage(context.getString(R.string.note_error))
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
-                            .show()
-                        dismiss()
-                    }
+                    content.append(note)
                 }
-            }
-        } catch (e: Exception) {
-            if (isScreenLocked()) {
-                dismissWithMessage(context.getString(R.string.note_error))
-            } else {
-                Toast.makeText(context, context.getString(R.string.note_error), Toast.LENGTH_SHORT)
-                    .show()
+
+                context.contentResolver.openOutputStream(file.uri)?.use { outputStream ->
+                    outputStream.write(content.toString().toByteArray())
+                }
+
+                Toast.makeText(context, R.string.note_saved, Toast.LENGTH_SHORT).show()
                 dismiss()
+            } catch (e: Exception) {
+                Toast.makeText(context, R.string.note_error, Toast.LENGTH_SHORT).show()
             }
+        } else {
+            Toast.makeText(context, R.string.note_error, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -53,6 +53,9 @@
     <string name="no_indent">No indent</string>
     <string name="indent_level">Indent %d</string>
     <string name="add_timestamp">Add timestamp before text</string>
+    <string name="use_note_text_in_filename">Use note text beginning in filename</string>
+    <string name="note_text_in_filename_length">Note text length in filename</string>
+    <string name="note_text_in_filename_length_hint">Number of characters from note text beginning to use in filename</string>
     <string name="timestamp_template_hint">Timestamp template (put date and time formatting patterns inside double curly braces: {{ }})</string>
     <string name="microphone_permission_denied">To use voice input, you need to allow access to the microphone</string>
     <string name="current_version">Current version: %1$s</string>

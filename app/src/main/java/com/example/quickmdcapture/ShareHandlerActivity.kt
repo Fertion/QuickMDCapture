@@ -140,11 +140,27 @@ class ShareHandlerActivity : AppCompatActivity() {
         val isTimestampEnabled = settingsViewModel.isTimestampEnabled.value
         val timestampTemplate = settingsViewModel.timestampTemplate.value
         val dateCreatedTemplate = settingsViewModel.dateCreatedTemplate.value
+        val isNoteTextInFilenameEnabled = settingsViewModel.isNoteTextInFilenameEnabled.value
+        val noteTextInFilenameLength = settingsViewModel.noteTextInFilenameLength.value
 
         val dateTemplateWithoutBrackets = noteDateTemplate.replace("{{", "").replace("}}", "")
         val timeStamp = SimpleDateFormat(dateTemplateWithoutBrackets, Locale.getDefault()).format(Date())
         val fullTimeStamp = getFormattedTimestamp(dateCreatedTemplate)
-        val fileName = "${timeStamp.replace(":", "_")}.md"
+        
+        // Формируем имя файла
+        var fileName = "${timeStamp.replace(":", "_")}"
+        
+        // Добавляем начало текста заметки в имя файла, если включено
+        if (isNoteTextInFilenameEnabled) {
+            val noteText = text.take(noteTextInFilenameLength)
+                .replace(Regex("[<>:\"/\\|?*]"), "_") // Заменяем недопустимые символы
+                .trim()
+            if (noteText.isNotEmpty()) {
+                fileName = "$fileName - $noteText"
+            }
+        }
+        
+        fileName = "$fileName.md"
 
         val existingFile = folder.findFile(fileName)
         if (existingFile != null) {

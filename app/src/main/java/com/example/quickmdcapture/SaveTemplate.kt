@@ -12,5 +12,7 @@ data class SaveTemplate(
     val timestampTemplate: String = "# {{yyyy.MM.dd HH:mm:ss}}",
     val isDateCreatedEnabled: Boolean = false,
     val propertyName: String = "created",
-    val dateCreatedTemplate: String = "{{yyyy.MM.dd}}T{{HH:mm:ssZ}}"
+    val dateCreatedTemplate: String = "{{yyyy.MM.dd}}T{{HH:mm:ssZ}}",
+    val isNoteTextInFilenameEnabled: Boolean = false,
+    val noteTextInFilenameLength: Int = 30
 ) 

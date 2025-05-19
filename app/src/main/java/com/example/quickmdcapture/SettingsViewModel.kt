@@ -86,6 +86,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val isTimestampEnabled: StateFlow<Boolean> = _isTimestampEnabled
 
+    private val _isNoteTextInFilenameEnabled = MutableStateFlow(
+        sharedPreferences.getBoolean("NOTE_TEXT_IN_FILENAME_ENABLED", false)
+    )
+    val isNoteTextInFilenameEnabled: StateFlow<Boolean> = _isNoteTextInFilenameEnabled
+
+    private val _noteTextInFilenameLength = MutableStateFlow(
+        sharedPreferences.getInt("NOTE_TEXT_IN_FILENAME_LENGTH", 30)
+    )
+    val noteTextInFilenameLength: StateFlow<Int> = _noteTextInFilenameLength
+
     private val _timestampTemplate = MutableStateFlow(
         sharedPreferences.getString(
             "TIMESTAMP_TEMPLATE",
@@ -181,6 +191,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _isDateCreatedEnabled.value = template.isDateCreatedEnabled
             _propertyName.value = template.propertyName
             _dateCreatedTemplate.value = template.dateCreatedTemplate
+            _isNoteTextInFilenameEnabled.value = template.isNoteTextInFilenameEnabled
+            _noteTextInFilenameLength.value = template.noteTextInFilenameLength
         }
     }
 
@@ -414,6 +426,27 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             "light" -> AppCompatDelegate.MODE_NIGHT_NO
             "dark" -> AppCompatDelegate.MODE_NIGHT_YES
             else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+    }
+
+    fun setNoteTextInFilenameEnabled(enabled: Boolean) {
+        _isNoteTextInFilenameEnabled.value = enabled
+        sharedPreferences.edit().putBoolean("NOTE_TEXT_IN_FILENAME_ENABLED", enabled).apply()
+        updateSelectedTemplate()
+    }
+
+    fun setNoteTextInFilenameLength(length: Int) {
+        _noteTextInFilenameLength.value = length
+        sharedPreferences.edit().putInt("NOTE_TEXT_IN_FILENAME_LENGTH", length).apply()
+        updateSelectedTemplate()
+    }
+
+    private fun updateSelectedTemplate() {
+        selectedTemplate?.let { template ->
+            updateTemplate(template.copy(
+                isNoteTextInFilenameEnabled = _isNoteTextInFilenameEnabled.value,
+                noteTextInFilenameLength = _noteTextInFilenameLength.value
+            ))
         }
     }
 }

@@ -61,6 +61,8 @@ fun SettingsScreen(
     val dateCreatedTemplate by settingsViewModel.dateCreatedTemplate.collectAsState()
     val selectedTheme by settingsViewModel.selectedTheme.collectAsState()
     val theme by settingsViewModel.theme.collectAsState()
+    val isNoteTextInFilenameEnabled by settingsViewModel.isNoteTextInFilenameEnabled.collectAsState()
+    val noteTextInFilenameLength by settingsViewModel.noteTextInFilenameLength.collectAsState()
 
     // Template management state
     var showAddTemplateDialog by remember { mutableStateOf(false) }
@@ -515,7 +517,7 @@ fun SettingsScreen(
 
             // File Format Section
             Text(
-                text = "Формат файла",
+                text = "Формат имени файла",
                 fontWeight = FontWeight.Bold,
                 color = textColor,
                 modifier = Modifier.fillMaxWidth()
@@ -534,6 +536,53 @@ fun SettingsScreen(
                     containerColor = Color.Transparent
                 )
             )
+
+            // Настройка использования текста заметки в имени файла
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Switch(
+                    checked = isNoteTextInFilenameEnabled,
+                    onCheckedChange = { settingsViewModel.setNoteTextInFilenameEnabled(it) }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(id = R.string.use_note_text_in_filename),
+                    modifier = Modifier.weight(1f),
+                    color = textColor
+                )
+            }
+
+            if (isNoteTextInFilenameEnabled) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(id = R.string.note_text_in_filename_length),
+                    color = textColor
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                TextField(
+                    value = noteTextInFilenameLength.toString(),
+                    onValueChange = { value ->
+                        value.toIntOrNull()?.let { length ->
+                            if (length > 0) {
+                                settingsViewModel.setNoteTextInFilenameLength(length)
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    ),
+                    placeholder = {
+                        Text(
+                            text = stringResource(id = R.string.note_text_in_filename_length_hint),
+                            color = textColor.copy(alpha = 0.6f)
+                        )
+                    }
+                )
+            }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
