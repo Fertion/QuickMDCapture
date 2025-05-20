@@ -363,12 +363,8 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             return
         }
 
-        val dateFormat = SimpleDateFormat("yyyy.MM.dd HH_mm_ss", Locale.getDefault())
-        val currentDate = dateFormat.format(Date())
-
         // Формируем имя файла
-        var filename = settingsViewModel.noteDateTemplate.value
-            .replace("{{yyyy.MM.dd HH_mm_ss}}", currentDate)
+        var filename = getFileNameWithDate(settingsViewModel.noteDateTemplate.value)
 
         // Добавляем начало текста заметки в имя файла, если включено
         if (settingsViewModel.isNoteTextInFilenameEnabled.value) {
@@ -382,20 +378,26 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
         filename = "$filename.md"
 
+        // Проверяем существование файла
         var file = folder.findFile(filename)
-        if (file == null) {
+        val isNewFile = file == null
+
+        if (isNewFile) {
             file = folder.createFile("text/markdown", filename)
         }
 
         if (file != null) {
             try {
                 val content = StringBuilder()
-                if (settingsViewModel.isTimestampEnabled.value) {
+                
+                // Добавляем временную метку только для нового файла
+                if (isNewFile && settingsViewModel.isTimestampEnabled.value) {
                     val timestamp = settingsViewModel.timestampTemplate.value
                         .replace("{{yyyy.MM.dd HH:mm:ss}}", SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date()))
                     content.append(timestamp).append("\n")
                 }
 
+                // Форматируем текст заметки
                 if (settingsViewModel.isListItemsEnabled.value) {
                     val indent = "  ".repeat(settingsViewModel.listItemIndentLevel.value)
                     note.lines().forEach { line ->
@@ -405,20 +407,29 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
                     content.append(note)
                 }
 
-                // Add YAML header with creation date if enabled
-                if (settingsViewModel.isDateCreatedEnabled.value) {
+                // Добавляем YAML заголовок только для нового файла
+                if (isNewFile && settingsViewModel.isDateCreatedEnabled.value) {
                     val fullTimeStamp = getFormattedTimestamp(settingsViewModel.dateCreatedTemplate.value)
                     val yamlHeader = "---\n${settingsViewModel.propertyName.value}: $fullTimeStamp\n---\n"
                     content.insert(0, yamlHeader)
                 }
 
-                context.contentResolver.openOutputStream(file.uri)?.use { outputStream ->
+                // Открываем файл для записи
+                context.contentResolver.openOutputStream(file.uri, if (isNewFile) "w" else "wa")?.use { outputStream ->
+                    if (!isNewFile) {
+                        // Добавляем перенос строки перед новым текстом, если файл не пустой
+                        outputStream.write("\n".toByteArray())
+                    }
                     outputStream.write(content.toString().toByteArray())
                 }
 
                 settingsViewModel.clearCurrentText()
                 settingsViewModel.clearPreviousText()
-                Toast.makeText(context, R.string.note_saved, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    if (isNewFile) R.string.note_saved else R.string.note_appended,
+                    Toast.LENGTH_SHORT
+                ).show()
                 dismiss()
             } catch (e: Exception) {
                 Toast.makeText(context, R.string.note_error, Toast.LENGTH_SHORT).show()
@@ -470,7 +481,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
         }
 
-        return "${result.replace(":", "_")}.md"
+        return result.replace(":", "_")
     }
 
     private fun getFormattedTimestamp(template: String): String {
