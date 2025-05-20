@@ -28,7 +28,14 @@ class ShareHandlerActivity : AppCompatActivity() {
         val action = intent.action
         val type = intent.type
 
-        val folderUriString = settingsViewModel.folderUri.value
+        // Get the default template
+        val defaultTemplate = settingsViewModel.templates.value.find { it.isDefault }
+        if (defaultTemplate == null) {
+            Toast.makeText(this, getString(R.string.no_default_template), Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val folderUriString = defaultTemplate.folderUri
         if (folderUriString == getString(R.string.folder_not_selected)) {
             Toast.makeText(this, getString(R.string.folder_not_selected), Toast.LENGTH_SHORT).show()
             return
@@ -40,6 +47,12 @@ class ShareHandlerActivity : AppCompatActivity() {
             Toast.makeText(this, getString(R.string.note_error), Toast.LENGTH_SHORT).show()
             return
         }
+
+        // Store the current template ID to restore it later
+        val currentTemplateId = settingsViewModel.selectedTemplateId.value
+
+        // Temporarily switch to the default template
+        settingsViewModel.selectTemplate(defaultTemplate.id)
 
         when (action) {
             Intent.ACTION_SEND -> {
@@ -55,6 +68,9 @@ class ShareHandlerActivity : AppCompatActivity() {
                 // Unsupported действие
             }
         }
+
+        // Restore the previously selected template
+        currentTemplateId?.let { settingsViewModel.selectTemplate(it) }
     }
 
     private fun handleActionSend(intent: Intent, type: String?, folder: DocumentFile) {

@@ -81,4 +81,5 @@
     <string name="delete">Delete</string>
     <string name="set_as_default">Set as Default</string>
     <string name="default_template">Default Template</string>
+    <string name="no_default_template">No default template found. Please set a default template in settings.</string>
 </resources>
