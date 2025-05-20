@@ -389,38 +389,41 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
         if (file != null) {
             try {
                 val content = StringBuilder()
-                
-                // Добавляем временную метку только для нового файла
-                if (isNewFile && settingsViewModel.isTimestampEnabled.value) {
-                    val timestamp = settingsViewModel.timestampTemplate.value
-                        .replace("{{yyyy.MM.dd HH:mm:ss}}", SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.getDefault()).format(Date()))
+
+                // Форматируем текст заметки
+                val formattedNote = if (settingsViewModel.isListItemsEnabled.value) {
+                    val indent = "  ".repeat(settingsViewModel.listItemIndentLevel.value)
+                    note.lines().joinToString("\n") { line ->
+                        "$indent- $line"
+                    }
+                } else {
+                    note
+                }
+
+                // Добавляем временную метку перед текстом, если включено
+                if (settingsViewModel.isTimestampEnabled.value) {
+                    val timestamp = getFormattedTimestamp(settingsViewModel.timestampTemplate.value)
                     content.append(timestamp).append("\n")
                 }
 
-                // Форматируем текст заметки
-                if (settingsViewModel.isListItemsEnabled.value) {
-                    val indent = "  ".repeat(settingsViewModel.listItemIndentLevel.value)
-                    note.lines().forEach { line ->
-                        content.append(indent).append("- ").append(line).append("\n")
-                    }
-                } else {
-                    content.append(note)
-                }
-
-                // Добавляем YAML заголовок только для нового файла
-                if (isNewFile && settingsViewModel.isDateCreatedEnabled.value) {
-                    val fullTimeStamp = getFormattedTimestamp(settingsViewModel.dateCreatedTemplate.value)
-                    val yamlHeader = "---\n${settingsViewModel.propertyName.value}: $fullTimeStamp\n---\n"
-                    content.insert(0, yamlHeader)
-                }
+                // Добавляем отформатированный текст
+                content.append(formattedNote)
 
                 // Открываем файл для записи
                 context.contentResolver.openOutputStream(file.uri, if (isNewFile) "w" else "wa")?.use { outputStream ->
-                    if (!isNewFile) {
-                        // Добавляем перенос строки перед новым текстом, если файл не пустой
+                    if (isNewFile) {
+                        // Для нового файла добавляем YAML заголовок, если включено
+                        if (settingsViewModel.isDateCreatedEnabled.value) {
+                            val fullTimeStamp = getFormattedTimestamp(settingsViewModel.dateCreatedTemplate.value)
+                            val yamlHeader = "---\n${settingsViewModel.propertyName.value}: $fullTimeStamp\n---\n"
+                            outputStream.write(yamlHeader.toByteArray())
+                        }
+                        outputStream.write(content.toString().toByteArray())
+                    } else {
+                        // Для существующего файла добавляем перенос строки и новый текст
                         outputStream.write("\n".toByteArray())
+                        outputStream.write(content.toString().toByteArray())
                     }
-                    outputStream.write(content.toString().toByteArray())
                 }
 
                 settingsViewModel.clearCurrentText()
