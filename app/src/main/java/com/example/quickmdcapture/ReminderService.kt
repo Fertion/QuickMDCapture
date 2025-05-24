@@ -16,6 +16,7 @@ class ReminderService : Service() {
     companion object {
         private const val CHANNEL_ID = "ReminderChannel"
         private const val NOTIFICATION_ID = 2
+        private const val SERVICE_NOTIFICATION_ID = 1
     }
 
     private lateinit var settingsViewModel: SettingsViewModel
@@ -31,6 +32,8 @@ class ReminderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Start as foreground service with a silent notification
+        startForeground(SERVICE_NOTIFICATION_ID, createSilentNotification())
         startReminderJob()
         return START_STICKY
     }
@@ -56,6 +59,19 @@ class ReminderService : Service() {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun createSilentNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("")
+            .setContentText("")
+            .setPriority(NotificationCompat.PRIORITY_MIN)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+            .setSilent(true)
+            .setOngoing(true)
+            .build()
     }
 
     private fun createNotification(): Notification {
