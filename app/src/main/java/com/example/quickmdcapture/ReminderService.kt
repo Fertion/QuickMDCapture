@@ -138,9 +138,12 @@ class ReminderService : Service() {
 
         if (!isInTimeRange) return false
 
-        // Check if it's time for a reminder based on the interval
+        // Check if current minute matches the reminder schedule
         val interval = settingsViewModel.reminderInterval.value
-        return currentMinute % interval == 0
+        
+        // Calculate which minute in the interval we should be at
+        val minutesSinceStart = (currentTimeInMinutes - startTimeInMinutes) % interval
+        return minutesSinceStart == 0
     }
 
     private fun showReminderNotification() {
