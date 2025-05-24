@@ -165,7 +165,7 @@ class MainActivity : AppCompatActivity() {
 
     fun startReminderService() {
         val serviceIntent = Intent(this, ReminderService::class.java)
-        ContextCompat.startForegroundService(this, serviceIntent)
+        startService(serviceIntent)
     }
 
     fun stopReminderService() {

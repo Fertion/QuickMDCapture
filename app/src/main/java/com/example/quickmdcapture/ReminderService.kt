@@ -14,9 +14,8 @@ import kotlinx.coroutines.*
 class ReminderService : Service() {
 
     companion object {
-        private const val CHANNEL_ID = "ReminderChannel"
-        private const val NOTIFICATION_ID = 2
-        private const val SERVICE_NOTIFICATION_ID = 1
+        private const val REMINDER_CHANNEL_ID = "ReminderChannel"
+        private const val REMINDER_NOTIFICATION_ID = 100
     }
 
     private lateinit var settingsViewModel: SettingsViewModel
@@ -32,8 +31,6 @@ class ReminderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Start as foreground service with a silent notification
-        startForeground(SERVICE_NOTIFICATION_ID, createSilentNotification())
         startReminderJob()
         return START_STICKY
     }
@@ -46,32 +43,22 @@ class ReminderService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.reminder_channel_name)
-            val descriptionText = getString(R.string.reminder_channel_description)
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val reminderChannel = NotificationChannel(
+                REMINDER_CHANNEL_ID,
+                getString(R.string.reminder_channel_name),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = getString(R.string.reminder_channel_description)
                 setShowBadge(true)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 enableLights(true)
                 enableVibration(true)
             }
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 
-    private fun createSilentNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("")
-            .setContentText("")
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
-            .setSilent(true)
-            .setOngoing(true)
-            .build()
+            notificationManager.createNotificationChannel(reminderChannel)
+        }
     }
 
     private fun createNotification(): Notification {
@@ -84,12 +71,12 @@ class ReminderService : Service() {
 
         val pendingIntent = PendingIntent.getActivity(
             this,
-            NOTIFICATION_ID,
+            REMINDER_NOTIFICATION_ID,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        return NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(settingsViewModel.reminderText.value)
@@ -104,11 +91,17 @@ class ReminderService : Service() {
     private fun startReminderJob() {
         reminderJob?.cancel()
         reminderJob = serviceScope.launch {
+            // Add initial delay to avoid immediate triggering
+            delay(5000L) // 5 seconds in milliseconds
+            
             while (isActive) {
                 if (shouldShowReminder()) {
                     showReminderNotification()
                 }
-                delay(TimeUnit.MINUTES.toMillis(1))
+                // Wait until the start of the next minute
+                val currentSeconds = Calendar.getInstance().get(Calendar.SECOND)
+                val delayUntilNextMinute = (60 - currentSeconds) * 1000L // Convert to milliseconds
+                delay(delayUntilNextMinute)
             }
         }
     }
@@ -119,7 +112,11 @@ class ReminderService : Service() {
         val currentTime = Calendar.getInstance()
         val currentHour = currentTime.get(Calendar.HOUR_OF_DAY)
         val currentMinute = currentTime.get(Calendar.MINUTE)
+        val currentSecond = currentTime.get(Calendar.SECOND)
         val currentTimeInMinutes = currentHour * 60 + currentMinute
+
+        // Only trigger at the start of the minute (when seconds = 0)
+        if (currentSecond != 0) return false
 
         val startTime = settingsViewModel.reminderStartTime.value.split(":")
         val endTime = settingsViewModel.reminderEndTime.value.split(":")
@@ -148,6 +145,6 @@ class ReminderService : Service() {
 
     private fun showReminderNotification() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID, createNotification())
+        notificationManager.notify(REMINDER_NOTIFICATION_ID, createNotification())
     }
 } 
