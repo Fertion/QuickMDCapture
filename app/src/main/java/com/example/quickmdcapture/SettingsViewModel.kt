@@ -96,6 +96,35 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val noteTextInFilenameLength: StateFlow<Int> = _noteTextInFilenameLength
 
+    // Reminder settings
+    private val _isReminderEnabled = MutableStateFlow(
+        sharedPreferences.getBoolean("REMINDER_ENABLED", false)
+    )
+    val isReminderEnabled: StateFlow<Boolean> = _isReminderEnabled
+
+    private val _reminderText = MutableStateFlow(
+        sharedPreferences.getString(
+            "REMINDER_TEXT",
+            "Запись в дневник. Что происходило? Что сделал, как и зачем? Что беспокоит, какие эмоции испытывал?"
+        ) ?: "Запись в дневник. Что происходило? Что сделал, как и зачем? Что беспокоит, какие эмоции испытывал?"
+    )
+    val reminderText: StateFlow<String> = _reminderText
+
+    private val _reminderInterval = MutableStateFlow(
+        sharedPreferences.getInt("REMINDER_INTERVAL", 60)
+    )
+    val reminderInterval: StateFlow<Int> = _reminderInterval
+
+    private val _reminderStartTime = MutableStateFlow(
+        sharedPreferences.getString("REMINDER_START_TIME", "09:00") ?: "09:00"
+    )
+    val reminderStartTime: StateFlow<String> = _reminderStartTime
+
+    private val _reminderEndTime = MutableStateFlow(
+        sharedPreferences.getString("REMINDER_END_TIME", "21:00") ?: "21:00"
+    )
+    val reminderEndTime: StateFlow<String> = _reminderEndTime
+
     private val _timestampTemplate = MutableStateFlow(
         sharedPreferences.getString(
             "TIMESTAMP_TEMPLATE",
@@ -449,6 +478,42 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 isNoteTextInFilenameEnabled = _isNoteTextInFilenameEnabled.value,
                 noteTextInFilenameLength = _noteTextInFilenameLength.value
             ))
+        }
+    }
+
+    // Reminder settings update functions
+    fun updateReminderEnabled(isEnabled: Boolean) {
+        viewModelScope.launch {
+            _isReminderEnabled.value = isEnabled
+            sharedPreferences.edit().putBoolean("REMINDER_ENABLED", isEnabled).apply()
+        }
+    }
+
+    fun updateReminderText(text: String) {
+        viewModelScope.launch {
+            _reminderText.value = text
+            sharedPreferences.edit().putString("REMINDER_TEXT", text).apply()
+        }
+    }
+
+    fun updateReminderInterval(interval: Int) {
+        viewModelScope.launch {
+            _reminderInterval.value = interval
+            sharedPreferences.edit().putInt("REMINDER_INTERVAL", interval).apply()
+        }
+    }
+
+    fun updateReminderStartTime(time: String) {
+        viewModelScope.launch {
+            _reminderStartTime.value = time
+            sharedPreferences.edit().putString("REMINDER_START_TIME", time).apply()
+        }
+    }
+
+    fun updateReminderEndTime(time: String) {
+        viewModelScope.launch {
+            _reminderEndTime.value = time
+            sharedPreferences.edit().putString("REMINDER_END_TIME", time).apply()
         }
     }
 }

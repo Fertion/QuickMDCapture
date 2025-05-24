@@ -82,4 +82,16 @@
     <string name="set_as_default">Set as Default</string>
     <string name="default_template">Default Template</string>
     <string name="no_default_template">No default template found. Please set a default template in settings.</string>
+
+    <!-- Reminder settings -->
+    <string name="reminder_settings_title">Regular note reminders</string>
+    <string name="enable_reminders">Enable reminders</string>
+    <string name="reminder_text">Reminder text</string>
+    <string name="reminder_text_hint">Text to show in the reminder notification</string>
+    <string name="reminder_interval">Reminder interval (minutes)</string>
+    <string name="reminder_interval_hint">How often to show reminders (in minutes)</string>
+    <string name="reminder_start_time">Start time</string>
+    <string name="reminder_end_time">End time</string>
+    <string name="reminder_channel_name">Note Reminders</string>
+    <string name="reminder_channel_description">Regular reminders to write notes</string>
 </resources>

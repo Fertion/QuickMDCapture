@@ -44,6 +44,11 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".ReminderService"
+            android:enabled="true"
+            android:exported="false" />
+
         <!-- Добавленный Activity для обработки функции поделиться -->
         <activity
             android:name=".ShareHandlerActivity"

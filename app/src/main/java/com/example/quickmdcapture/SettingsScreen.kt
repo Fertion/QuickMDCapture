@@ -1,5 +1,6 @@
 package com.example.quickmdcapture
 
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.background
@@ -62,6 +63,13 @@ fun SettingsScreen(
     val theme by settingsViewModel.theme.collectAsState()
     val isNoteTextInFilenameEnabled by settingsViewModel.isNoteTextInFilenameEnabled.collectAsState()
     val noteTextInFilenameLength by settingsViewModel.noteTextInFilenameLength.collectAsState()
+
+    // Reminder settings state
+    val isReminderEnabled by settingsViewModel.isReminderEnabled.collectAsState()
+    val reminderText by settingsViewModel.reminderText.collectAsState()
+    val reminderInterval by settingsViewModel.reminderInterval.collectAsState()
+    val reminderStartTime by settingsViewModel.reminderStartTime.collectAsState()
+    val reminderEndTime by settingsViewModel.reminderEndTime.collectAsState()
 
     // Template management state
     var showAddTemplateDialog by remember { mutableStateOf(false) }
@@ -792,6 +800,146 @@ fun SettingsScreen(
                         settingsViewModel.updateAutoSaveEnabled(it)
                     }
                 )
+            }
+        }
+    }
+
+    // Reminder Settings Section
+    Text(
+        text = stringResource(id = R.string.reminder_settings_title),
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.fillMaxWidth(),
+        color = textColor
+    )
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        colors = cardColors
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    stringResource(id = R.string.enable_reminders),
+                    color = textColor,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = isReminderEnabled,
+                    onCheckedChange = { isChecked ->
+                        settingsViewModel.updateReminderEnabled(isChecked)
+                        if (isChecked) {
+                            context.startService(Intent(context, ReminderService::class.java))
+                        } else {
+                            context.stopService(Intent(context, ReminderService::class.java))
+                        }
+                    }
+                )
+            }
+
+            if (isReminderEnabled) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = reminderText,
+                    onValueChange = { settingsViewModel.updateReminderText(it) },
+                    label = { Text(stringResource(id = R.string.reminder_text), color = textColor) },
+                    placeholder = { Text(stringResource(id = R.string.reminder_text_hint), color = textColor) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = reminderInterval.toString(),
+                    onValueChange = { 
+                        it.toIntOrNull()?.let { value ->
+                            if (value > 0) {
+                                settingsViewModel.updateReminderInterval(value)
+                            }
+                        }
+                    },
+                    label = { Text(stringResource(id = R.string.reminder_interval), color = textColor) },
+                    placeholder = { Text(stringResource(id = R.string.reminder_interval_hint), color = textColor) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(id = R.string.reminder_start_time),
+                            color = textColor
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                val timePickerDialog = TimePickerDialog(
+                                    context,
+                                    TimePickerDialog.OnTimeSetListener { _, hour: Int, minute: Int ->
+                                        val time = String.format("%02d:%02d", hour, minute)
+                                        settingsViewModel.updateReminderStartTime(time)
+                                    },
+                                    reminderStartTime.split(":")[0].toInt(),
+                                    reminderStartTime.split(":")[1].toInt(),
+                                    true
+                                )
+                                timePickerDialog.show()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = textColor
+                            )
+                        ) {
+                            Text(reminderStartTime)
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(id = R.string.reminder_end_time),
+                            color = textColor
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                val timePickerDialog = TimePickerDialog(
+                                    context,
+                                    TimePickerDialog.OnTimeSetListener { _, hour: Int, minute: Int ->
+                                        val time = String.format("%02d:%02d", hour, minute)
+                                        settingsViewModel.updateReminderEndTime(time)
+                                    },
+                                    reminderEndTime.split(":")[0].toInt(),
+                                    reminderEndTime.split(":")[1].toInt(),
+                                    true
+                                )
+                                timePickerDialog.show()
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = textColor
+                            )
+                        ) {
+                            Text(reminderEndTime)
+                        }
+                    }
+                }
             }
         }
     }

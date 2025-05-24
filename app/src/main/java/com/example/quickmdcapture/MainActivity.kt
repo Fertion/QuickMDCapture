@@ -142,6 +142,11 @@ class MainActivity : AppCompatActivity() {
         if (settingsViewModel.isShowOverlockScreenDialog.value) {
             checkOverlayPermission()
         }
+
+        // Start reminder service if enabled
+        if (settingsViewModel.isReminderEnabled.value) {
+            startReminderService()
+        }
     }
 
     fun startNotificationService() {
@@ -156,6 +161,16 @@ class MainActivity : AppCompatActivity() {
         stopService(serviceIntent)
         Toast.makeText(this, getString(R.string.notification_service_stopped), Toast.LENGTH_SHORT)
             .show()
+    }
+
+    fun startReminderService() {
+        val serviceIntent = Intent(this, ReminderService::class.java)
+        ContextCompat.startForegroundService(this, serviceIntent)
+    }
+
+    fun stopReminderService() {
+        val serviceIntent = Intent(this, ReminderService::class.java)
+        stopService(serviceIntent)
     }
 
     private fun checkNotificationPermission() {
