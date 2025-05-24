@@ -93,4 +93,5 @@
     <string name="reminder_end_time">Заканчивать в</string>
     <string name="reminder_channel_name">Напоминания о заметках</string>
     <string name="reminder_channel_description">Регулярные напоминания о необходимости записать заметку</string>
+    <string name="reminder_default_text">Запись в дневник. Что происходило? Что сделал, как и зачем? Что беспокоит, какие эмоции испытывал?</string>
 </resources>

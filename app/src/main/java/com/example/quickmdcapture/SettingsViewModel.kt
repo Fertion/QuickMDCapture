@@ -105,8 +105,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _reminderText = MutableStateFlow(
         sharedPreferences.getString(
             "REMINDER_TEXT",
-            "Запись в дневник. Что происходило? Что сделал, как и зачем? Что беспокоит, какие эмоции испытывал?"
-        ) ?: "Запись в дневник. Что происходило? Что сделал, как и зачем? Что беспокоит, какие эмоции испытывал?"
+            application.getString(R.string.reminder_default_text)
+        ) ?: application.getString(R.string.reminder_default_text)
     )
     val reminderText: StateFlow<String> = _reminderText
 
