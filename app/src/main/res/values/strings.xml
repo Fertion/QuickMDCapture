@@ -95,4 +95,5 @@
     <string name="reminder_channel_name">Note Reminders</string>
     <string name="reminder_channel_description">Regular reminders to write notes</string>
     <string name="reminder_default_text">Write in your diary. What happened? What did you do, how and why? What worries you, what emotions did you experience?</string>
+    <string name="reminder_service_running">Reminder service is running</string>
 </resources>

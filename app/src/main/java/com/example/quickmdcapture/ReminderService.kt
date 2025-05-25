@@ -28,6 +28,7 @@ class ReminderService : Service() {
         super.onCreate()
         settingsViewModel = ViewModelProvider.AndroidViewModelFactory(application).create(SettingsViewModel::class.java)
         createNotificationChannel()
+        startForeground(REMINDER_NOTIFICATION_ID, createNotification())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -62,28 +63,12 @@ class ReminderService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val intent = Intent(this, TransparentActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_NO_ANIMATION or
-                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            REMINDER_NOTIFICATION_ID,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         return NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(settingsViewModel.reminderText.value)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
+            .setContentText(getString(R.string.reminder_service_running))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
     }
@@ -91,17 +76,17 @@ class ReminderService : Service() {
     private fun startReminderJob() {
         reminderJob?.cancel()
         reminderJob = serviceScope.launch {
-            // Add initial delay to avoid immediate triggering
-            delay(5000L) // 5 seconds in milliseconds
-            
             while (isActive) {
                 if (shouldShowReminder()) {
                     showReminderNotification()
                 }
-                // Wait until the start of the next minute
-                val currentSeconds = Calendar.getInstance().get(Calendar.SECOND)
-                val delayUntilNextMinute = (60 - currentSeconds) * 1000L // Convert to milliseconds
-                delay(delayUntilNextMinute)
+                
+                // Calculate next exact minute
+                val now = System.currentTimeMillis()
+                val nextMinute = (now / 60000 + 1) * 60000
+                val delay = nextMinute - now
+                
+                delay(delay)
             }
         }
     }
@@ -112,11 +97,7 @@ class ReminderService : Service() {
         val currentTime = Calendar.getInstance()
         val currentHour = currentTime.get(Calendar.HOUR_OF_DAY)
         val currentMinute = currentTime.get(Calendar.MINUTE)
-        val currentSecond = currentTime.get(Calendar.SECOND)
         val currentTimeInMinutes = currentHour * 60 + currentMinute
-
-        // Only trigger at the start of the minute (when seconds = 0)
-        if (currentSecond != 0) return false
 
         val startTime = settingsViewModel.reminderStartTime.value.split(":")
         val endTime = settingsViewModel.reminderEndTime.value.split(":")
@@ -126,10 +107,8 @@ class ReminderService : Service() {
 
         // Handle case when end time is on the next day
         val isInTimeRange = if (endTimeInMinutes < startTimeInMinutes) {
-            // For overnight periods (e.g., 13:00 to 02:00)
             currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes
         } else {
-            // For same-day periods (e.g., 09:00 to 21:00)
             currentTimeInMinutes in startTimeInMinutes..endTimeInMinutes
         }
 
@@ -145,6 +124,32 @@ class ReminderService : Service() {
 
     private fun showReminderNotification() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(REMINDER_NOTIFICATION_ID, createNotification())
+        
+        val intent = Intent(this, TransparentActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NO_ANIMATION or
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            REMINDER_NOTIFICATION_ID,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(settingsViewModel.reminderText.value)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+            
+        notificationManager.notify(REMINDER_NOTIFICATION_ID, notification)
     }
 } 
