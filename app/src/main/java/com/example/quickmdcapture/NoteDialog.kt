@@ -392,7 +392,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
 
                 // Форматируем текст заметки
                 val formattedNote = if (settingsViewModel.isListItemsEnabled.value) {
-                    val indent = "  ".repeat(settingsViewModel.listItemIndentLevel.value)
+                    val indent = "\t".repeat(settingsViewModel.listItemIndentLevel.value)
                     note.lines().joinToString("\n") { line ->
                         "$indent- $line"
                     }
