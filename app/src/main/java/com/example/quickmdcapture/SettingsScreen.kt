@@ -92,7 +92,7 @@ fun SettingsScreen(
     val textColor = if (theme == "dark") Color.LightGray else Color.Black
     val cardColors =
         if (theme == "dark") CardDefaults.cardColors(containerColor = Color(0xFF424242)) else CardDefaults.cardColors()
-    val dropdownMenuBackgroundColor = if (theme == "dark") Color(0xFF424242) else Color.White
+    val dropdownMenuBackgroundColor = if (theme == "dark") Color(0xFF2D2D2D) else Color.White
 
     // Add debounced scrolling state
     var debouncedIsScrolling by remember { mutableStateOf(false) }
@@ -656,13 +656,15 @@ fun SettingsScreen(
                                                 0 -> stringResource(id = R.string.no_indent)
                                                 else -> stringResource(id = R.string.indent_level, level)
                                             },
-                                            color = textColor
+                                            color = textColor,
+                                            modifier = Modifier.padding(vertical = 8.dp)
                                         )
                                     },
                                     onClick = {
                                         settingsViewModel.updateListItemIndentLevel(level)
                                         expanded = false
-                                    }
+                                    },
+                                    modifier = Modifier.height(48.dp)
                                 )
                             }
                         }
