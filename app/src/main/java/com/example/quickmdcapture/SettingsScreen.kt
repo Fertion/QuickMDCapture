@@ -645,7 +645,8 @@ fun SettingsScreen(
 
                         DropdownMenu(
                             expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.background(dropdownMenuBackgroundColor)
                         ) {
                             indentLevels.forEach { level ->
                                 DropdownMenuItem(
