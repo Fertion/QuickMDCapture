@@ -28,7 +28,6 @@ class ReminderService : Service() {
         super.onCreate()
         settingsViewModel = ViewModelProvider.AndroidViewModelFactory(application).create(SettingsViewModel::class.java)
         createNotificationChannel()
-        startForeground(REMINDER_NOTIFICATION_ID, createNotification())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -60,17 +59,6 @@ class ReminderService : Service() {
 
             notificationManager.createNotificationChannel(reminderChannel)
         }
-    }
-
-    private fun createNotification(): Notification {
-        return NotificationCompat.Builder(this, REMINDER_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.reminder_service_running))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_SERVICE)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .build()
     }
 
     private fun startReminderJob() {

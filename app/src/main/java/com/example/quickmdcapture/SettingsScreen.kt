@@ -835,10 +835,10 @@ fun SettingsScreen(
                     checked = isReminderEnabled,
                     onCheckedChange = { isChecked ->
                         settingsViewModel.updateReminderEnabled(isChecked)
-                        if (isChecked) {
-                            context.startService(Intent(context, ReminderService::class.java))
-                        } else {
-                            context.stopService(Intent(context, ReminderService::class.java))
+                        // Restart NotificationService to handle reminder service
+                        context.stopService(Intent(context, NotificationService::class.java))
+                        if (isShowNotificationEnabled) {
+                            context.startService(Intent(context, NotificationService::class.java))
                         }
                     }
                 )

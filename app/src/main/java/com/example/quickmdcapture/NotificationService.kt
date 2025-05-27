@@ -27,6 +27,17 @@ class NotificationService : Service() {
 
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
+        
+        // Start ReminderService if reminders are enabled
+        if (settingsViewModel.isReminderEnabled.value) {
+            startService(Intent(this, ReminderService::class.java))
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Stop ReminderService when NotificationService is destroyed
+        stopService(Intent(this, ReminderService::class.java))
     }
 
     private fun createNotificationChannel() {
@@ -89,7 +100,6 @@ class NotificationService : Service() {
             builder.setChannelId(CHANNEL_ID)
         }
 
-
         when (notificationStyle) {
             "standard" -> {
                 builder.setContentTitle(getString(R.string.app_name))
@@ -102,7 +112,7 @@ class NotificationService : Service() {
                 notificationLayout.setOnClickPendingIntent(R.id.voice_input_button, voiceInputPendingIntent)
 
                 builder.setCustomContentView(notificationLayout)
-                builder.setCustomBigContentView(notificationLayout) // Для расширенного вида
+                builder.setCustomBigContentView(notificationLayout)
             }
             // Добавьте здесь обработку других стилей уведомлений
         }
