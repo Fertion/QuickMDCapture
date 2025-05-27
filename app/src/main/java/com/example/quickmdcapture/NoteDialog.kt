@@ -63,6 +63,7 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             (view as TextView).apply {
                 setTextColor(textColor)
                 gravity = android.view.Gravity.CENTER
+                setPadding(paddingLeft, 24, paddingRight, 24)
             }
             return view
         }
