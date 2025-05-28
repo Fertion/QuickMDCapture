@@ -524,7 +524,7 @@ fun SettingsScreen(
 
             // File Format Section
             Text(
-                text = "Формат имени файла",
+                text = stringResource(id = R.string.file_format_section_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
                 modifier = Modifier.fillMaxWidth()
@@ -598,6 +598,16 @@ fun SettingsScreen(
                     }
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(id = R.string.text_format_section_title),
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
