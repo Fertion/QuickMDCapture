@@ -491,7 +491,7 @@ fun SettingsScreen(
 
             // Save Location Section
             Text(
-                text = "Место сохранения",
+                text = stringResource(id = R.string.save_location_section_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
                 modifier = Modifier.fillMaxWidth()

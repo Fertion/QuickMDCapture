@@ -96,4 +96,5 @@
     <string name="reminder_default_text">Запись в дневник. Что происходило? Что сделал, как и зачем? Что беспокоит, какие эмоции испытывал?</string>
     <string name="file_format_section_title">Формат имени файла</string>
     <string name="text_format_section_title">Формат сохраняемого текста</string>
+    <string name="save_location_section_title">Место сохранения</string>
 </resources>

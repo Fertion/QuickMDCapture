@@ -99,4 +99,6 @@
 
     <string name="file_format_section_title">File Format</string>
     <string name="text_format_section_title">Text Format</string>
+
+    <string name="save_location_section_title">Save Location</string>
 </resources>
