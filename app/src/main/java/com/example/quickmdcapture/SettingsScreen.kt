@@ -568,12 +568,20 @@ fun SettingsScreen(
                     color = textColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                var noteTextLengthInput by remember { mutableStateOf(noteTextInFilenameLength.toString()) }
                 TextField(
-                    value = noteTextInFilenameLength.toString(),
+                    value = noteTextLengthInput,
                     onValueChange = { value ->
-                        value.toIntOrNull()?.let { length ->
-                            if (length > 0) {
-                                settingsViewModel.setNoteTextInFilenameLength(length)
+                        noteTextLengthInput = value
+                        when {
+                            value.isEmpty() -> {
+                                settingsViewModel.setNoteTextInFilenameLength(1)
+                            }
+                            value.toIntOrNull() != null -> {
+                                val number = value.toInt()
+                                if (number > 0) {
+                                    settingsViewModel.setNoteTextInFilenameLength(number)
+                                }
                             }
                         }
                     },
@@ -584,7 +592,7 @@ fun SettingsScreen(
                     ),
                     placeholder = {
                         Text(
-                            text = stringResource(id = R.string.note_text_in_filename_length_hint),
+                            text = "1",
                             color = textColor.copy(alpha = 0.6f)
                         )
                     }
@@ -863,17 +871,25 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                var reminderIntervalInput by remember { mutableStateOf(reminderInterval.toString()) }
                 TextField(
-                    value = reminderInterval.toString(),
-                    onValueChange = { 
-                        it.toIntOrNull()?.let { value ->
-                            if (value > 0) {
-                                settingsViewModel.updateReminderInterval(value)
+                    value = reminderIntervalInput,
+                    onValueChange = { value ->
+                        reminderIntervalInput = value
+                        when {
+                            value.isEmpty() -> {
+                                settingsViewModel.updateReminderInterval(1)
+                            }
+                            value.toIntOrNull() != null -> {
+                                val number = value.toInt()
+                                if (number > 0) {
+                                    settingsViewModel.updateReminderInterval(number)
+                                }
                             }
                         }
                     },
                     label = { Text(stringResource(id = R.string.reminder_interval), color = textColor) },
-                    placeholder = { Text(stringResource(id = R.string.reminder_interval_hint), color = textColor) },
+                    placeholder = { Text("1", color = textColor.copy(alpha = 0.6f)) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.textFieldColors(
                         textColor = textColor,
