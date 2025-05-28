@@ -573,15 +573,15 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Switch(
-                    checked = isNoteTextInFilenameEnabled,
-                    onCheckedChange = { settingsViewModel.setNoteTextInFilenameEnabled(it) }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(id = R.string.use_note_text_in_filename),
                     modifier = Modifier.weight(1f),
                     color = textColor
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = isNoteTextInFilenameEnabled,
+                    onCheckedChange = { settingsViewModel.setNoteTextInFilenameEnabled(it) }
                 )
             }
 
