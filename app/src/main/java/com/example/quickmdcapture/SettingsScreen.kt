@@ -309,6 +309,14 @@ fun SettingsScreen(
                     }
                 }
             }
+            // Add divider after notification style dropdown
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -487,7 +495,14 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Add divider after template management buttons
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
+            )
 
             // Save Location Section
             Text(
@@ -520,7 +535,14 @@ fun SettingsScreen(
                 maxLines = 2
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Add divider after folder selection
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
+            )
 
             // File Format Section
             Text(
@@ -542,6 +564,15 @@ fun SettingsScreen(
                     textColor = textColor,
                     containerColor = Color.Transparent
                 )
+            )
+
+            // Add divider after filename template
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
             )
 
             // Настройка использования текста заметки в имени файла
@@ -598,6 +629,15 @@ fun SettingsScreen(
                     }
                 )
             }
+
+            // Add divider after note text length input
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -690,6 +730,15 @@ fun SettingsScreen(
                 }
             }
 
+            // Add divider after list item indent selection
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
+            )
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -722,6 +771,15 @@ fun SettingsScreen(
                     textColor = textColor,
                     containerColor = Color.Transparent
                 )
+            )
+
+            // Add divider after timestamp template
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                thickness = 2.dp,
+                color = if (theme == "dark") Color.LightGray else Color.DarkGray
             )
 
             Spacer(modifier = Modifier.height(24.dp))
