@@ -238,111 +238,106 @@ fun SettingsScreen(
                 )
             }
 
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(id = R.string.notification_style),
-                    modifier = Modifier.fillMaxWidth(),
-                    color = textColor
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ExposedDropdownMenuBox(
-                    expanded = expandedNotificationStyle,
-                    onExpandedChange = { newExpanded ->
-                        if (!debouncedIsScrolling) {
-                            expandedNotificationStyle = newExpanded
-                        }
-                    }
-                ) {
-                    TextField(
-                        value = when (notificationStyle) {
-                            "standard" -> stringResource(id = R.string.notification_style_standard)
-                            "expanded_with_buttons_1" -> stringResource(id = R.string.notification_style_expanded_with_buttons_1)
-                            else -> ""
-                        },
-                        onValueChange = {},
-                        readOnly = true,
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = textColor,
-                            containerColor = Color.Transparent
-                        )
+            if (isShowNotificationEnabled) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(id = R.string.notification_style),
+                        modifier = Modifier.fillMaxWidth(),
+                        color = textColor
                     )
-                    // Устанавливаем фон для ExposedDropdownMenu
-                    ExposedDropdownMenu(
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ExposedDropdownMenuBox(
                         expanded = expandedNotificationStyle,
-                        onDismissRequest = { expandedNotificationStyle = false },
-                        modifier = Modifier.background(dropdownMenuBackgroundColor)
+                        onExpandedChange = { newExpanded ->
+                            if (!debouncedIsScrolling) {
+                                expandedNotificationStyle = newExpanded
+                            }
+                        }
                     ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    stringResource(id = R.string.notification_style_standard),
-                                    color = textColor
-                                )
+                        TextField(
+                            value = when (notificationStyle) {
+                                "standard" -> stringResource(id = R.string.notification_style_standard)
+                                "expanded_with_buttons_1" -> stringResource(id = R.string.notification_style_expanded_with_buttons_1)
+                                else -> ""
                             },
-                            onClick = {
-                                settingsViewModel.updateNotificationStyle("standard")
-                                expandedNotificationStyle = false
-                                context.stopService(Intent(context, NotificationService::class.java))
-                                context.startService(Intent(context, NotificationService::class.java))
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    stringResource(id = R.string.notification_style_expanded_with_buttons_1),
-                                    color = textColor
-                                )
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedNotificationStyle)
                             },
-                            onClick = {
-                                settingsViewModel.updateNotificationStyle("expanded_with_buttons_1")
-                                expandedNotificationStyle = false
-                                context.stopService(Intent(context, NotificationService::class.java))
-                                context.startService(Intent(context, NotificationService::class.java))
-                            }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
+                            colors = TextFieldDefaults.textFieldColors(
+                                textColor = textColor,
+                                containerColor = Color.Transparent
+                            )
                         )
+                        // Устанавливаем фон для ExposedDropdownMenu
+                        ExposedDropdownMenu(
+                            expanded = expandedNotificationStyle,
+                            onDismissRequest = { expandedNotificationStyle = false },
+                            modifier = Modifier.background(dropdownMenuBackgroundColor)
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(id = R.string.notification_style_standard),
+                                        color = textColor
+                                    )
+                                },
+                                onClick = {
+                                    settingsViewModel.updateNotificationStyle("standard")
+                                    expandedNotificationStyle = false
+                                    context.stopService(Intent(context, NotificationService::class.java))
+                                    context.startService(Intent(context, NotificationService::class.java))
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(id = R.string.notification_style_expanded_with_buttons_1),
+                                        color = textColor
+                                    )
+                                },
+                                onClick = {
+                                    settingsViewModel.updateNotificationStyle("expanded_with_buttons_1")
+                                    expandedNotificationStyle = false
+                                    context.stopService(Intent(context, NotificationService::class.java))
+                                    context.startService(Intent(context, NotificationService::class.java))
+                                }
+                            )
+                        }
                     }
                 }
-            }
-            // Add divider after notification style dropdown
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                thickness = 2.dp,
-                color = if (theme == "dark") Color.LightGray else Color.DarkGray
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    stringResource(id = R.string.show_overlock_screen_dialog),
-                    color = textColor,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                IconButton(onClick = { showOverlaySettingsInfoDialog = true }) {
-                    Icon(Icons.Filled.Info, contentDescription = "Info", tint = textColor)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = isShowOverlockScreenDialog,
-                    onCheckedChange = { isChecked ->
-                        if (isChecked) {
-                            showOverlayPermissionWarningDialog()
-                        } else {
-                            settingsViewModel.updateShowOverlockScreenDialog(isChecked)
+
+                // Remove divider after notification style dropdown
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        stringResource(id = R.string.show_overlock_screen_dialog),
+                        color = textColor,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    IconButton(onClick = { showOverlaySettingsInfoDialog = true }) {
+                        Icon(Icons.Filled.Info, contentDescription = "Info", tint = textColor)
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = isShowOverlockScreenDialog,
+                        onCheckedChange = { isChecked ->
+                            if (isChecked) {
+                                showOverlayPermissionWarningDialog()
+                            } else {
+                                settingsViewModel.updateShowOverlockScreenDialog(isChecked)
+                            }
                         }
-                    },
-                    enabled = isShowNotificationEnabled
-                )
+                    )
+                }
             }
         }
     }
@@ -566,15 +561,7 @@ fun SettingsScreen(
                 )
             )
 
-            // Add divider after filename template
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                thickness = 2.dp,
-                color = if (theme == "dark") Color.LightGray else Color.DarkGray
-            )
-
+            // Remove divider after filename template
             // Настройка использования текста заметки в имени файла
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -730,15 +717,7 @@ fun SettingsScreen(
                 }
             }
 
-            // Add divider after list item indent selection
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                thickness = 2.dp,
-                color = if (theme == "dark") Color.LightGray else Color.DarkGray
-            )
-
+            // Remove divider after list item indent selection
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -759,19 +738,20 @@ fun SettingsScreen(
                 )
             }
 
-            TextField(
-                value = timestampTemplate,
-                onValueChange = {
-                    settingsViewModel.updateTimestampTemplate(it)
-                },
-                label = { Text(stringResource(id = R.string.timestamp_template_hint), color = textColor) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = isTimestampEnabled,
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = textColor,
-                    containerColor = Color.Transparent
+            if (isTimestampEnabled) {
+                TextField(
+                    value = timestampTemplate,
+                    onValueChange = {
+                        settingsViewModel.updateTimestampTemplate(it)
+                    },
+                    label = { Text(stringResource(id = R.string.timestamp_template_hint), color = textColor) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
+            }
 
             // Add divider after timestamp template
             Divider(
@@ -812,37 +792,38 @@ fun SettingsScreen(
                     }
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
 
-            TextField(
-                value = propertyName,
-                onValueChange = {
-                    settingsViewModel.updatePropertyName(it)
-                },
-                enabled = isDateCreatedEnabled,
-                label = { Text(stringResource(id = R.string.property_name_hint), color = textColor) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = textColor,
-                    containerColor = Color.Transparent
+            if (isDateCreatedEnabled) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextField(
+                    value = propertyName,
+                    onValueChange = {
+                        settingsViewModel.updatePropertyName(it)
+                    },
+                    label = { Text(stringResource(id = R.string.property_name_hint), color = textColor) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            TextField(
-                value = dateCreatedTemplate,
-                onValueChange = {
-                    settingsViewModel.updateDateCreatedTemplate(it)
-                },
-                enabled = isDateCreatedEnabled,
-                label = { Text(stringResource(id = R.string.date_format_hint), color = textColor) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = textColor,
-                    containerColor = Color.Transparent
+                TextField(
+                    value = dateCreatedTemplate,
+                    onValueChange = {
+                        settingsViewModel.updateDateCreatedTemplate(it)
+                    },
+                    label = { Text(stringResource(id = R.string.date_format_hint), color = textColor) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = textColor,
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
+            }
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
