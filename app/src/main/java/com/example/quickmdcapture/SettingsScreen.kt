@@ -33,6 +33,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import java.util.*
 import kotlinx.coroutines.delay
 
@@ -360,7 +362,9 @@ fun SettingsScreen(
                 text = stringResource(id = R.string.templates_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -504,7 +508,9 @@ fun SettingsScreen(
                 text = stringResource(id = R.string.save_location_section_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -544,7 +550,9 @@ fun SettingsScreen(
                 text = stringResource(id = R.string.file_format_section_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -561,8 +569,6 @@ fun SettingsScreen(
                 )
             )
 
-            // Remove divider after filename template
-            // Настройка использования текста заметки в имени файла
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -617,7 +623,6 @@ fun SettingsScreen(
                 )
             }
 
-            // Add divider after note text length input
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -626,13 +631,13 @@ fun SettingsScreen(
                 color = if (theme == "dark") Color.LightGray else Color.DarkGray
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
                 text = stringResource(id = R.string.text_format_section_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -717,7 +722,6 @@ fun SettingsScreen(
                 }
             }
 
-            // Remove divider after list item indent selection
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -753,7 +757,6 @@ fun SettingsScreen(
                 )
             }
 
-            // Add divider after timestamp template
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -762,14 +765,14 @@ fun SettingsScreen(
                 color = if (theme == "dark") Color.LightGray else Color.DarkGray
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // YAML Properties Section
             Text(
                 text = stringResource(id = R.string.yaml_settings_title),
                 fontWeight = FontWeight.Bold,
                 color = textColor,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
 
