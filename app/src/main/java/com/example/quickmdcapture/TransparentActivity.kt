@@ -54,7 +54,8 @@ class TransparentActivity : AppCompatActivity() {
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
 
         val isAutoSaveEnabled = settingsViewModel.isAutoSaveEnabled.value
-        dialog = NoteDialog(this, isAutoSaveEnabled)
+        val isFromReminder = intent.getBooleanExtra("FROM_REMINDER", false)
+        dialog = NoteDialog(this, isAutoSaveEnabled, isFromReminder)
         dialog.setOnDismissListener {
             finish()
             overridePendingTransition(0, 0)

@@ -118,6 +118,7 @@ class ReminderService : Service() {
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_NO_ANIMATION or
                     Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            putExtra("FROM_REMINDER", true)
         }
 
         val pendingIntent = PendingIntent.getActivity(

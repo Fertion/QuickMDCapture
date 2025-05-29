@@ -30,8 +30,11 @@ import androidx.lifecycle.ViewModelProvider
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NoteDialog(private val activity: AppCompatActivity, private val isAutoSaveEnabled: Boolean) :
-    Dialog(activity) {
+class NoteDialog(
+    private val activity: AppCompatActivity, 
+    private val isAutoSaveEnabled: Boolean,
+    private val isFromReminder: Boolean
+) : Dialog(activity) {
 
     private lateinit var settingsViewModel: SettingsViewModel
     private lateinit var speechRecognizer: SpeechRecognizer
@@ -186,11 +189,23 @@ class NoteDialog(private val activity: AppCompatActivity, private val isAutoSave
             }
         }
         
-        // Set initial selection to default template
-        val defaultTemplateIndex = templates.indexOfFirst { it.isDefault }
-        if (defaultTemplateIndex != -1) {
-            templateSpinner.setSelection(defaultTemplateIndex)
-            settingsViewModel.selectTemplate(templates[defaultTemplateIndex].id)
+        // Set initial selection based on source
+        val templateIndex = if (isFromReminder) {
+            // Use reminder template if available, otherwise fall back to default
+            val reminderTemplateId = settingsViewModel.selectedReminderTemplateId.value
+            if (reminderTemplateId != null) {
+                templates.indexOfFirst { it.id == reminderTemplateId }
+            } else {
+                templates.indexOfFirst { it.isDefault }
+            }
+        } else {
+            // Use default template for regular notifications
+            templates.indexOfFirst { it.isDefault }
+        }
+        
+        if (templateIndex != -1) {
+            templateSpinner.setSelection(templateIndex)
+            settingsViewModel.selectTemplate(templates[templateIndex].id)
         }
 
         templateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
