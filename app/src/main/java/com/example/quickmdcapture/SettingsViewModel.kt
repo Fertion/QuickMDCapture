@@ -27,6 +27,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val selectedTemplateId: StateFlow<String?> = _selectedTemplateId
 
+    private val _selectedReminderTemplateId = MutableStateFlow(
+        sharedPreferences.getString("SELECTED_REMINDER_TEMPLATE_ID", null)
+    )
+    val selectedReminderTemplateId: StateFlow<String?> = _selectedReminderTemplateId
+
     private val selectedTemplate: SaveTemplate?
         get() = templates.value.find { it.id == selectedTemplateId.value }
 
@@ -174,6 +179,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             selectTemplate(defaultTemplate.id)
         }
 
+        // Set default template for reminders if none selected
+        if (selectedReminderTemplateId.value == null) {
+            val defaultTemplate = templates.value.find { it.isDefault }
+            defaultTemplate?.let { selectReminderTemplate(it.id) }
+        }
+
         // Load selected template settings
         loadSelectedTemplateSettings()
 
@@ -281,6 +292,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 val defaultTemplate = updatedTemplates.find { it.isDefault }
                 defaultTemplate?.let { selectTemplate(it.id) }
             }
+
+            if (selectedReminderTemplateId.value == templateId) {
+                // Select the default template for reminders if the deleted template was selected
+                val defaultTemplate = updatedTemplates.find { it.isDefault }
+                defaultTemplate?.let { selectReminderTemplate(it.id) }
+            }
         }
     }
 
@@ -291,6 +308,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 .putString("SELECTED_TEMPLATE_ID", templateId)
                 .apply()
             loadSelectedTemplateSettings()
+        }
+    }
+
+    fun selectReminderTemplate(templateId: String) {
+        viewModelScope.launch {
+            _selectedReminderTemplateId.value = templateId
+            sharedPreferences.edit()
+                .putString("SELECTED_REMINDER_TEMPLATE_ID", templateId)
+                .apply()
         }
     }
 

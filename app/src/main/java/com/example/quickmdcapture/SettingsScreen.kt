@@ -83,6 +83,7 @@ fun SettingsScreen(
 
     val templates by settingsViewModel.templates.collectAsState()
     val selectedTemplateId by settingsViewModel.selectedTemplateId.collectAsState()
+    val selectedReminderTemplateId by settingsViewModel.selectedReminderTemplateId.collectAsState()
     var expandedTemplates by remember { mutableStateOf(false) }
 
     var showAddNotesMethodsInfoDialog by remember { mutableStateOf(false) }
@@ -1008,6 +1009,51 @@ fun SettingsScreen(
                             )
                         ) {
                             Text(reminderEndTime)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Default template dropdown
+                var expandedReminderTemplate by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = expandedReminderTemplate,
+                    onExpandedChange = { expandedReminderTemplate = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        value = templates.find { it.id == selectedReminderTemplateId }?.name 
+                            ?: templates.find { it.isDefault }?.name 
+                            ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(id = R.string.reminder_default_template), color = textColor) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedReminderTemplate) },
+                        colors = TextFieldDefaults.textFieldColors(
+                            textColor = textColor,
+                            containerColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedReminderTemplate,
+                        onDismissRequest = { expandedReminderTemplate = false },
+                        modifier = Modifier
+                            .exposedDropdownSize()
+                            .background(dropdownMenuBackgroundColor)
+                    ) {
+                        templates.forEach { template ->
+                            DropdownMenuItem(
+                                text = { Text(template.name, color = textColor) },
+                                onClick = {
+                                    settingsViewModel.selectReminderTemplate(template.id)
+                                    expandedReminderTemplate = false
+                                }
+                            )
                         }
                     }
                 }
