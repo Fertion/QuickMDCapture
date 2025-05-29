@@ -91,7 +91,6 @@ class NotificationService : Service() {
             .setShowWhen(false)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setFullScreenIntent(pendingIntent, true)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setSound(null)
             .setVibrate(null)
