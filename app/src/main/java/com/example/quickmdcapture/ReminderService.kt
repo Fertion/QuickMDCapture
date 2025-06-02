@@ -16,11 +16,15 @@ class ReminderService : Service() {
     companion object {
         private const val REMINDER_CHANNEL_ID = "ReminderChannel"
         private const val REMINDER_NOTIFICATION_ID = 100
+        private const val PREFS_NAME = "ReminderPrefs"
+        private const val KEY_LAST_REMINDER_TIME = "last_reminder_time"
+        private const val KEY_NEXT_SCHEDULED_TIME = "next_scheduled_time"
     }
 
     private lateinit var settingsViewModel: SettingsViewModel
     private val serviceScope = CoroutineScope(Dispatchers.Default + Job())
     private var reminderJob: Job? = null
+    private val prefs by lazy { getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -65,26 +69,50 @@ class ReminderService : Service() {
         reminderJob?.cancel()
         reminderJob = serviceScope.launch {
             while (isActive) {
-                if (shouldShowReminder()) {
-                    showReminderNotification()
+                if (!settingsViewModel.isReminderEnabled.value) {
+                    delay(TimeUnit.MINUTES.toMillis(1))
+                    continue
                 }
-                
-                // Calculate next exact minute
-                val now = System.currentTimeMillis()
-                val nextMinute = (now / 60000 + 1) * 60000
-                val delay = nextMinute - now
-                
+
+                val currentTime = System.currentTimeMillis()
+                val lastReminderTime = prefs.getLong(KEY_LAST_REMINDER_TIME, 0)
+                val nextScheduledTime = prefs.getLong(KEY_NEXT_SCHEDULED_TIME, 0)
+
+                if (isTimeInRange(currentTime)) {
+                    val shouldShowReminder = when {
+                        // Don't show if we already showed a reminder in this minute
+                        lastReminderTime > 0 && isSameMinute(currentTime, lastReminderTime) -> false
+                        // Show if we're at a scheduled interval
+                        isAtScheduledInterval(currentTime) -> true
+                        // Show if we missed a scheduled reminder
+                        nextScheduledTime > 0 && currentTime > nextScheduledTime -> true
+                        else -> false
+                    }
+
+                    if (shouldShowReminder) {
+                        showReminderNotification()
+                        prefs.edit().putLong(KEY_LAST_REMINDER_TIME, currentTime).apply()
+                    }
+                }
+
+                // Calculate next scheduled time
+                val nextTime = calculateNextScheduledTime(currentTime)
+                prefs.edit().putLong(KEY_NEXT_SCHEDULED_TIME, nextTime).apply()
+
+                // Calculate delay until next check
+                val delay = minOf(
+                    TimeUnit.MINUTES.toMillis(1), // Check at least every minute
+                    nextTime - currentTime // Or until next scheduled time
+                )
                 delay(delay)
             }
         }
     }
 
-    private fun shouldShowReminder(): Boolean {
-        if (!settingsViewModel.isReminderEnabled.value) return false
-
-        val currentTime = Calendar.getInstance()
-        val currentHour = currentTime.get(Calendar.HOUR_OF_DAY)
-        val currentMinute = currentTime.get(Calendar.MINUTE)
+    private fun isTimeInRange(timeMillis: Long): Boolean {
+        val calendar = Calendar.getInstance().apply { timeInMillis = timeMillis }
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
         val currentTimeInMinutes = currentHour * 60 + currentMinute
 
         val startTime = settingsViewModel.reminderStartTime.value.split(":")
@@ -93,21 +121,102 @@ class ReminderService : Service() {
         val startTimeInMinutes = startTime[0].toInt() * 60 + startTime[1].toInt()
         val endTimeInMinutes = endTime[0].toInt() * 60 + endTime[1].toInt()
 
-        // Handle case when end time is on the next day
-        val isInTimeRange = if (endTimeInMinutes < startTimeInMinutes) {
+        return if (endTimeInMinutes < startTimeInMinutes) {
+            // Handle overnight range (e.g., 23:00 to 07:00)
             currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes
         } else {
             currentTimeInMinutes in startTimeInMinutes..endTimeInMinutes
         }
+    }
 
-        if (!isInTimeRange) return false
+    private fun isAtScheduledInterval(timeMillis: Long): Boolean {
+        val calendar = Calendar.getInstance().apply { timeInMillis = timeMillis }
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+        val currentTimeInMinutes = currentHour * 60 + currentMinute
 
-        // Check if current minute matches the reminder schedule
+        val startTime = settingsViewModel.reminderStartTime.value.split(":")
+        val startTimeInMinutes = startTime[0].toInt() * 60 + startTime[1].toInt()
         val interval = settingsViewModel.reminderInterval.value
-        
-        // Calculate which minute in the interval we should be at
+
         val minutesSinceStart = (currentTimeInMinutes - startTimeInMinutes) % interval
         return minutesSinceStart == 0
+    }
+
+    private fun isSameMinute(time1: Long, time2: Long): Boolean {
+        val cal1 = Calendar.getInstance().apply { timeInMillis = time1 }
+        val cal2 = Calendar.getInstance().apply { timeInMillis = time2 }
+        
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+               cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR) &&
+               cal1.get(Calendar.HOUR_OF_DAY) == cal2.get(Calendar.HOUR_OF_DAY) &&
+               cal1.get(Calendar.MINUTE) == cal2.get(Calendar.MINUTE)
+    }
+
+    private fun calculateNextScheduledTime(currentTime: Long): Long {
+        val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
+        val currentTimeInMinutes = currentHour * 60 + currentMinute
+
+        val startTime = settingsViewModel.reminderStartTime.value.split(":")
+        val endTime = settingsViewModel.reminderEndTime.value.split(":")
+        val interval = settingsViewModel.reminderInterval.value
+        
+        val startTimeInMinutes = startTime[0].toInt() * 60 + startTime[1].toInt()
+        val endTimeInMinutes = endTime[0].toInt() * 60 + endTime[1].toInt()
+
+        // If current time is not in range, return start of next range
+        if (!isTimeInRange(currentTime)) {
+            val nextStartTime = if (currentTimeInMinutes >= endTimeInMinutes) {
+                // If we're past end time, next start is tomorrow
+                startTimeInMinutes + 24 * 60
+            } else {
+                startTimeInMinutes
+            }
+            return calendar.apply {
+                set(Calendar.HOUR_OF_DAY, nextStartTime / 60)
+                set(Calendar.MINUTE, nextStartTime % 60)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+                if (nextStartTime >= 24 * 60) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }.timeInMillis
+        }
+
+        // Calculate next interval time
+        val minutesSinceStart = (currentTimeInMinutes - startTimeInMinutes) % interval
+        val nextIntervalTime = if (minutesSinceStart == 0) {
+            currentTimeInMinutes + interval
+        } else {
+            currentTimeInMinutes + (interval - minutesSinceStart)
+        }
+
+        // Check if next interval is within range
+        if (isTimeInRange(calendar.apply {
+            set(Calendar.HOUR_OF_DAY, nextIntervalTime / 60)
+            set(Calendar.MINUTE, nextIntervalTime % 60)
+        }.timeInMillis)) {
+            return calendar.timeInMillis
+        }
+
+        // If next interval is outside range, return start of next range
+        val nextStartTime = if (endTimeInMinutes < startTimeInMinutes) {
+            // If range is overnight, next start is tomorrow
+            startTimeInMinutes + 24 * 60
+        } else {
+            startTimeInMinutes
+        }
+        return calendar.apply {
+            set(Calendar.HOUR_OF_DAY, nextStartTime / 60)
+            set(Calendar.MINUTE, nextStartTime % 60)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (nextStartTime >= 24 * 60) {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
+        }.timeInMillis
     }
 
     private fun showReminderNotification() {
