@@ -100,8 +100,10 @@ class ReminderService : Service() {
                 prefs.edit().putLong(KEY_NEXT_SCHEDULED_TIME, nextTime).apply()
 
                 // Calculate delay until next check
+                // Always align to the start of the next minute
+                val nextMinute = ((currentTime / 60000) + 1) * 60000
                 val delay = minOf(
-                    TimeUnit.MINUTES.toMillis(1), // Check at least every minute
+                    nextMinute - currentTime, // Delay until start of next minute
                     nextTime - currentTime // Or until next scheduled time
                 )
                 delay(delay)
