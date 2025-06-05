@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ReminderService : Service() {
 
@@ -24,6 +25,7 @@ class ReminderService : Service() {
     private lateinit var settingsViewModel: SettingsViewModel
     private val serviceScope = CoroutineScope(Dispatchers.Default + Job())
     private var reminderJob: Job? = null
+    private val isReminderRunning = AtomicBoolean(false)
     private val prefs by lazy { getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -66,47 +68,56 @@ class ReminderService : Service() {
     }
 
     private fun startReminderJob() {
+        // If a reminder cycle is already running, don't start a new one
+        if (!isReminderRunning.compareAndSet(false, true)) {
+            return
+        }
+
         reminderJob?.cancel()
         reminderJob = serviceScope.launch {
-            while (isActive) {
-                if (!settingsViewModel.isReminderEnabled.value) {
-                    delay(TimeUnit.MINUTES.toMillis(1))
-                    continue
-                }
-
-                val currentTime = System.currentTimeMillis()
-                val lastReminderTime = prefs.getLong(KEY_LAST_REMINDER_TIME, 0)
-                val nextScheduledTime = prefs.getLong(KEY_NEXT_SCHEDULED_TIME, 0)
-
-                if (isTimeInRange(currentTime)) {
-                    val shouldShowReminder = when {
-                        // Don't show if we already showed a reminder in this minute
-                        lastReminderTime > 0 && isSameMinute(currentTime, lastReminderTime) -> false
-                        // Show if we're at a scheduled interval
-                        isAtScheduledInterval(currentTime) -> true
-                        // Show if we missed a scheduled reminder
-                        nextScheduledTime > 0 && currentTime > nextScheduledTime -> true
-                        else -> false
+            try {
+                while (isActive) {
+                    if (!settingsViewModel.isReminderEnabled.value) {
+                        delay(TimeUnit.MINUTES.toMillis(1))
+                        continue
                     }
 
-                    if (shouldShowReminder) {
-                        showReminderNotification()
-                        prefs.edit().putLong(KEY_LAST_REMINDER_TIME, currentTime).apply()
+                    val currentTime = System.currentTimeMillis()
+                    val lastReminderTime = prefs.getLong(KEY_LAST_REMINDER_TIME, 0)
+                    val nextScheduledTime = prefs.getLong(KEY_NEXT_SCHEDULED_TIME, 0)
+
+                    if (isTimeInRange(currentTime)) {
+                        val shouldShowReminder = when {
+                            // Don't show if we already showed a reminder in this minute
+                            lastReminderTime > 0 && isSameMinute(currentTime, lastReminderTime) -> false
+                            // Show if we're at a scheduled interval
+                            isAtScheduledInterval(currentTime) -> true
+                            // Show if we missed a scheduled reminder
+                            nextScheduledTime > 0 && currentTime > nextScheduledTime -> true
+                            else -> false
+                        }
+
+                        if (shouldShowReminder) {
+                            showReminderNotification()
+                            prefs.edit().putLong(KEY_LAST_REMINDER_TIME, currentTime).apply()
+                        }
                     }
+
+                    // Calculate next scheduled time
+                    val nextTime = calculateNextScheduledTime(currentTime)
+                    prefs.edit().putLong(KEY_NEXT_SCHEDULED_TIME, nextTime).apply()
+
+                    // Calculate delay until next check
+                    // Always align to the start of the next minute
+                    val nextMinute = ((currentTime / 60000) + 1) * 60000
+                    val delay = minOf(
+                        nextMinute - currentTime, // Delay until start of next minute
+                        nextTime - currentTime // Or until next scheduled time
+                    )
+                    delay(delay)
                 }
-
-                // Calculate next scheduled time
-                val nextTime = calculateNextScheduledTime(currentTime)
-                prefs.edit().putLong(KEY_NEXT_SCHEDULED_TIME, nextTime).apply()
-
-                // Calculate delay until next check
-                // Always align to the start of the next minute
-                val nextMinute = ((currentTime / 60000) + 1) * 60000
-                val delay = minOf(
-                    nextMinute - currentTime, // Delay until start of next minute
-                    nextTime - currentTime // Or until next scheduled time
-                )
-                delay(delay)
+            } finally {
+                isReminderRunning.set(false)
             }
         }
     }
