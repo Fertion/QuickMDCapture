@@ -159,12 +159,10 @@ class ShareHandlerActivity : AppCompatActivity() {
         val isNoteTextInFilenameEnabled = settingsViewModel.isNoteTextInFilenameEnabled.value
         val noteTextInFilenameLength = settingsViewModel.noteTextInFilenameLength.value
 
-        val dateTemplateWithoutBrackets = noteDateTemplate.replace("{{", "").replace("}}", "")
-        val timeStamp = SimpleDateFormat(dateTemplateWithoutBrackets, Locale.getDefault()).format(Date())
         val fullTimeStamp = getFormattedTimestamp(dateCreatedTemplate)
         
         // Формируем имя файла
-        var fileName = "${timeStamp.replace(":", "_")}"
+        var fileName = getFileNameWithDate(noteDateTemplate)
         
         // Добавляем начало текста заметки в имя файла, если включено
         if (isNoteTextInFilenameEnabled) {
@@ -197,19 +195,19 @@ class ShareHandlerActivity : AppCompatActivity() {
             val newFile = folder.createFile("text/markdown", fileName)
             if (newFile != null) {
                 contentResolver.openOutputStream(newFile.uri)?.use { outputStream ->
-                    var dataToWrite = text
+                    var textToWrite = text
                     if (isListItemsEnabled) {
-                        dataToWrite = dataToWrite.split("\n").joinToString("\n") { 
+                        textToWrite = textToWrite.split("\n").joinToString("\n") { 
                             "\t".repeat(listItemIndentLevel) + "- $it" 
                         }
                     }
                     if (isTimestampEnabled) {
-                        dataToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$dataToWrite"
+                        textToWrite = "${getFormattedTimestamp(timestampTemplate)}\n$textToWrite"
                     }
                     if (isDateCreatedEnabled) {
-                        dataToWrite = "---\n$propertyName: $fullTimeStamp\n---\n$dataToWrite"
+                        textToWrite = "---\n$propertyName: $fullTimeStamp\n---\n$textToWrite"
                     }
-                    outputStream.write(dataToWrite.toByteArray())
+                    outputStream.write(textToWrite.toByteArray())
                 }
                 Toast.makeText(this, getString(R.string.note_saved), Toast.LENGTH_SHORT).show()
             } else {
@@ -239,6 +237,30 @@ class ShareHandlerActivity : AppCompatActivity() {
     }
 
     private fun getFormattedTimestamp(template: String): String {
+        val sb = StringBuilder()
+        var i = 0
+        while (i < template.length) {
+            if (template[i] == '{' && i < template.length - 1 && template[i + 1] == '{') {
+                i += 2
+                val endIndex = template.indexOf("}}", i)
+                if (endIndex != -1) {
+                    val datePart = template.substring(i, endIndex)
+                    val formattedDate = SimpleDateFormat(datePart, Locale.getDefault()).format(Date())
+                    sb.append(formattedDate)
+                    i = endIndex + 2
+                } else {
+                    sb.append(template[i])
+                    i++
+                }
+            } else {
+                sb.append(template[i])
+                i++
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun getFileNameWithDate(template: String): String {
         val sb = StringBuilder()
         var i = 0
         while (i < template.length) {
