@@ -73,6 +73,14 @@ fun SettingsScreen(
     val reminderStartTime by settingsViewModel.reminderStartTime.collectAsState()
     val reminderEndTime by settingsViewModel.reminderEndTime.collectAsState()
 
+    // Function to restart reminder service
+    fun restartReminderService() {
+        context.stopService(Intent(context, NotificationService::class.java))
+        if (isShowNotificationEnabled) {
+            context.startService(Intent(context, NotificationService::class.java))
+        }
+    }
+
     // Template management state
     var showAddTemplateDialog by remember { mutableStateOf(false) }
     var showRenameTemplateDialog by remember { mutableStateOf(false) }
@@ -899,10 +907,7 @@ fun SettingsScreen(
                     onCheckedChange = { isChecked ->
                         settingsViewModel.updateReminderEnabled(isChecked)
                         // Restart NotificationService to handle reminder service
-                        context.stopService(Intent(context, NotificationService::class.java))
-                        if (isShowNotificationEnabled) {
-                            context.startService(Intent(context, NotificationService::class.java))
-                        }
+                        restartReminderService()
                     }
                 )
             }
@@ -932,11 +937,13 @@ fun SettingsScreen(
                         when {
                             value.isEmpty() -> {
                                 settingsViewModel.updateReminderInterval(1)
+                                restartReminderService()
                             }
                             value.toIntOrNull() != null -> {
                                 val number = value.toInt()
                                 if (number > 0) {
                                     settingsViewModel.updateReminderInterval(number)
+                                    restartReminderService()
                                 }
                             }
                         }
@@ -968,6 +975,7 @@ fun SettingsScreen(
                                     TimePickerDialog.OnTimeSetListener { _, hour: Int, minute: Int ->
                                         val time = String.format("%02d:%02d", hour, minute)
                                         settingsViewModel.updateReminderStartTime(time)
+                                        restartReminderService()
                                     },
                                     reminderStartTime.split(":")[0].toInt(),
                                     reminderStartTime.split(":")[1].toInt(),
@@ -996,6 +1004,7 @@ fun SettingsScreen(
                                     TimePickerDialog.OnTimeSetListener { _, hour: Int, minute: Int ->
                                         val time = String.format("%02d:%02d", hour, minute)
                                         settingsViewModel.updateReminderEndTime(time)
+                                        restartReminderService()
                                     },
                                     reminderEndTime.split(":")[0].toInt(),
                                     reminderEndTime.split(":")[1].toInt(),
